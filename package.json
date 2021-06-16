@@ -1,0 +1,41 @@
+{
+  "name": "@interlay/monetary-js",
+  "version": "0.0.1",
+  "description": "JavaScript library to safely handle currency and cryptocurrency amounts",
+  "license": "MIT",
+  "repository": "https://github.com/interlay/monetary",
+  "scripts": {
+    "test": "mocha -r ts-node/register test/**/*.test.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/big.js": "^6.1.1",
+    "big.js": "^6.1.1",
+    "typescript": "^4.3.2"
+  },
+  "files": [
+    "build/",
+    "README.md"
+  ],
+  "prettier": {
+    "singleQuote": false,
+    "tabWidth": 4
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.12.2",
+    "chai": "^4.3.4",
+    "fast-check": "^2.16.0",
+    "husky": "^6.0.0",
+    "lint-staged": "^11.0.0",
+    "mocha": "^9.0.0",
+    "prettier": "^2.3.1",
+    "ts-node": "^10.0.0"
+  }
+}
