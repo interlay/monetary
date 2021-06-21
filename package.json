@@ -19,7 +19,7 @@
   ],
   "prettier": {
     "singleQuote": false,
-    "tabWidth": 4
+    "tabWidth": 2
   },
   "husky": {
     "hooks": {
