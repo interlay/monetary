@@ -1,3 +1,4 @@
+import { BigSource } from "big.js";
 import {
   Currency,
   generateFromConversions,
@@ -17,7 +18,15 @@ export const Ethereum: Currency<typeof ETHUnit> = {
   base: "ETH",
 } as const;
 
+/* Example that extends the constructor to allow convenient `new ETHAmount(amount)` calls */
 export class ETHAmount extends MonetaryAmount<typeof Ethereum, typeof ETHUnit> {
+  constructor(amount: BigSource, unit?: keyof typeof ETHUnit) {
+    super(Ethereum, amount, unit ? ETHUnit[unit] : 0);
+  }
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
   static from = generateFromConversions(Ethereum, ETHUnit);
 }
 
@@ -36,16 +45,17 @@ export class Tether implements ERC20<typeof TetherUnit> {
   get units(): typeof TetherUnit {
     return TetherUnit;
   }
-
   get base(): keyof typeof TetherUnit {
     return "Tether";
   }
-
   get name(): string {
     return "Tether";
   }
 }
 
 export class TetherAmount extends MonetaryAmount<Tether, typeof TetherUnit> {
-  static from = generateFromConversions(new Tether('0xdac17f958d2ee523a2206206994597c13d831ec7'), TetherUnit);
+  static from = generateFromConversions(
+    new Tether("0xdac17f958d2ee523a2206206994597c13d831ec7"),
+    TetherUnit
+  );
 }

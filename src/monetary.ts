@@ -7,6 +7,7 @@ export interface Currency<Units extends UnitList> {
   readonly name: string;
   readonly units: Units;
   readonly base: keyof Units;
+  readonly humanDecimals?: number;
 }
 
 type toConversions<U extends UnitList> = { [key in keyof U]: () => Big };
@@ -37,6 +38,16 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   toBig(unit: U[keyof U] = 0 as U[keyof U], rm?: RoundingMode): Big {
     const ret = this._amount.div(new Big(10).pow(unit));
     return ret.round(unit, rm); // ensure no decimal places lower than smallest unit
+  }
+
+  toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
+    let big = this.toBig(this.currency.units[this.currency.base]);
+    if (decimals !== undefined) big = big.round(decimals);
+    return big.toString();
+  }
+
+  eq(amount: this): boolean {
+    return this._amount.eq(amount._amount);
   }
 
   add(amount: this): this {
