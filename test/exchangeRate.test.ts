@@ -11,8 +11,11 @@ import {
 import { ExchangeRate } from "../src/exchangeRate";
 import * as fc from "fast-check";
 
+const fcDouble = (): fc.Arbitrary<number> =>
+  fc.double({ next: true, noDefaultInfinity: true, noNaN: true });
+
 describe("ExchangeRate", () => {
-  const rawRate = new Big(0.05849585); // ETH/BTC
+  const rawRate = new Big(0.05849583145); // ETH/BTC
   const ETHBTCRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
     Ethereum,
     Bitcoin,
@@ -22,14 +25,17 @@ describe("ExchangeRate", () => {
   describe("toBase", () => {
     it("should correctly convert value", () => {
       fc.assert(
-        fc.property(fc.nat(), (amount) => {
-          const ethAmount = ETHBTCRate.toBase(
-            BTCAmount.from.BTC(rawRate.mul(amount))
-          );
-          expect(ethAmount.toString(Ethereum.base)).to.eq(
-            new Big(amount).toString()
-          );
-        })
+        fc.property(
+          fcDouble(),
+          (amount) => {
+            const ethAmount = ETHBTCRate.toBase(
+              BTCAmount.from.BTC(rawRate.mul(amount))
+            );
+            expect(ethAmount.toString(Ethereum.base)).to.eq(
+              new Big(amount).round(Ethereum.base).toString()
+            );
+          }
+        )
       );
     });
   });
@@ -37,12 +43,15 @@ describe("ExchangeRate", () => {
   describe("toCounter", () => {
     it("should correctly convert value", () => {
       fc.assert(
-        fc.property(fc.nat(), (amount) => {
-          const btcAmount = ETHBTCRate.toCounter(ETHAmount.from.ETH(amount));
-          expect(btcAmount.toString(Bitcoin.base)).to.eq(
-            rawRate.mul(amount).toString()
-          );
-        })
+        fc.property(
+          fcDouble(),
+          (amount) => {
+            const btcAmount = ETHBTCRate.toCounter(ETHAmount.from.ETH(amount));
+            expect(btcAmount.toString(Bitcoin.base)).to.eq(
+              rawRate.mul(amount).round(Bitcoin.base).toString()
+            );
+          }
+        )
       );
     });
   });

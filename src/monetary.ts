@@ -21,7 +21,21 @@ type fromConversions<
 > = { [key in keyof U]: (amount: BigSource) => M };
 
 export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
-  protected _amount: Big; // stored with 0 decimals internally
+  protected _amount: Big; // stored internally at minimal unit (0 DP), but arbitrary precision
+  public rm: RoundingMode = RoundingMode.RoundHalfUp;
+
+  /**
+   * Accessor for the arbitrary precision internal storage.
+   * May hold fractional amounts below the lowest currency unit (e.g. fractional Satoshi).
+   **/
+  get _rawAmount() {
+    return this._amount;
+  }
+
+  private _integerAmount(rm?: RoundingMode): Big {
+    if (rm === undefined) rm = this.rm;
+    return this._amount.round(0, rm);
+  }
 
   constructor(
     readonly currency: C,
@@ -29,17 +43,16 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     unit: U[keyof U] = 0 as U[keyof U]
   ) {
     amount = new Big(amount).mul(new Big(10).pow(unit)); // convert to min denomination
-    amount = amount.round(0); // then ensure no extraneous decimal places
     this._amount = amount;
   }
 
-  toString(unit?: U[keyof U]): string {
-    return this.toBig(unit).toString();
+  toString(unit?: U[keyof U], rm?: RoundingMode): string {
+    return this.toBig(unit, rm).toString();
   }
 
   toBig(unit: U[keyof U] = 0 as U[keyof U], rm?: RoundingMode): Big {
     const ret = this._amount.div(new Big(10).pow(unit));
-    return ret.round(unit, rm); // ensure no decimal places lower than smallest unit
+    return ret.round(unit, rm === undefined? this.rm : rm); // ensure no decimal places lower than smallest unit
   }
 
   toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
@@ -48,8 +61,8 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return big.toString();
   }
 
-  eq(amount: this): boolean {
-    return this._amount.eq(amount._amount);
+  eq(amount: this, rm?: RoundingMode): boolean {
+    return this._integerAmount(rm).eq(amount._integerAmount(rm));
   }
 
   add(amount: this): this {

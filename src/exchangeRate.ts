@@ -71,15 +71,15 @@ export class ExchangeRate<
   toBase(
     amount: MonetaryAmount<Counter, CounterUnit>
   ): MonetaryAmount<Base, BaseUnit> {
-    const converted = amount.toBig().div(this.rate);
-    return new MonetaryAmount(this.base, converted);
+    const converted = amount.div(this.rate);
+    return new MonetaryAmount(this.base, converted._rawAmount);
   }
 
   toCounter(
     amount: MonetaryAmount<Base, BaseUnit>
   ): MonetaryAmount<Counter, CounterUnit> {
-    const converted = amount.toBig().mul(this.rate);
-    return new MonetaryAmount(this.counter, converted);
+    const converted = amount.mul(this.rate);
+    return new MonetaryAmount(this.counter, converted._rawAmount);
   }
 
   toBig(units?: Partial<UnitMap<BaseUnit, CounterUnit>>): Big {
