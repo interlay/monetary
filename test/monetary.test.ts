@@ -18,7 +18,7 @@ const DummyUnit = {
 export type DummyUnit = typeof DummyUnit;
 export const DummyCurrency: Currency<DummyUnit> = {
   name: "Dummy",
-  base: "Base",
+  base: DummyUnit.Base,
   units: DummyUnit,
   humanDecimals: 3,
 } as const;
@@ -40,7 +40,7 @@ function scaleBig(big: Big, decimals: number) {
 }
 
 describe("MonetaryAmount", () => {
-  describe("constructor and toString", () => {
+  describe("Constructor and toString", () => {
     it("should use 0 decimal unit by default", () => {
       fc.assert(
         fc.property(fcBig(), (rawAmount) => {
@@ -82,7 +82,7 @@ describe("MonetaryAmount", () => {
         fc.property(fcBig(), (rawAmount) => {
           const amount = new DummyAmount(rawAmount);
           const scaled = amount
-            .toBig(DummyUnit[DummyCurrency.base])
+            .toBig(DummyCurrency.base)
             .round(DummyCurrency.humanDecimals)
             .toString();
           expect(amount.toHuman()).to.eq(scaled);
@@ -98,7 +98,7 @@ describe("MonetaryAmount", () => {
           (rawAmount, decimals) => {
             const amount = new DummyAmount(rawAmount);
             const scaled = amount
-              .toBig(DummyUnit[DummyCurrency.base])
+              .toBig(DummyCurrency.base)
               .round(decimals)
               .toString();
             expect(amount.toHuman(decimals)).to.eq(scaled);

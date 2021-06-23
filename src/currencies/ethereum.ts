@@ -11,16 +11,17 @@ const ETHUnit = {
   GWei: 9,
   Wei: 0,
 } as const;
-
+export type ETHUnit = typeof ETHUnit;
 export const Ethereum: Currency<typeof ETHUnit> = {
   name: "Ethereum",
   units: ETHUnit,
-  base: "ETH",
+  base: ETHUnit.ETH,
 } as const;
+export type Ethereum = typeof Ethereum;
 
 /* Example that extends the constructor to allow convenient `new ETHAmount(amount)` calls */
-export class ETHAmount extends MonetaryAmount<typeof Ethereum, typeof ETHUnit> {
-  constructor(amount: BigSource, unit?: keyof typeof ETHUnit) {
+export class ETHAmount extends MonetaryAmount<Ethereum, ETHUnit> {
+  constructor(amount: BigSource, unit?: keyof ETHUnit) {
     super(Ethereum, amount, unit ? ETHUnit[unit] : 0);
   }
   withAmount(amount: BigSource): this {
@@ -38,15 +39,15 @@ export interface ERC20<Units extends UnitList> extends Currency<Units> {
 const TetherUnit = {
   Tether: 6,
 } as const;
-
-export class Tether implements ERC20<typeof TetherUnit> {
+export type TetherUnit = typeof TetherUnit;
+export class Tether implements ERC20<TetherUnit> {
   constructor(readonly address: string) {}
 
-  get units(): typeof TetherUnit {
+  get units(): TetherUnit {
     return TetherUnit;
   }
-  get base(): keyof typeof TetherUnit {
-    return "Tether";
+  get base(): TetherUnit[keyof TetherUnit] {
+    return TetherUnit.Tether;
   }
   get name(): string {
     return "Tether";

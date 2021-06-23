@@ -1,12 +1,14 @@
 import Big, { RoundingMode } from "big.js";
 import { BigSource } from "big.js";
 
+Big.DP = 100;
+
 export type UnitList = Record<string, number>;
 
 export interface Currency<Units extends UnitList> {
   readonly name: string;
   readonly units: Units;
-  readonly base: keyof Units;
+  readonly base: Units[keyof Units];
   readonly humanDecimals?: number;
 }
 
@@ -41,7 +43,7 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   }
 
   toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
-    let big = this.toBig(this.currency.units[this.currency.base]);
+    let big = this.toBig(this.currency.base);
     if (decimals !== undefined) big = big.round(decimals);
     return big.toString();
   }
