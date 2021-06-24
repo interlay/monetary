@@ -1,85 +1,68 @@
-import Big from 'big.js';
-import { BigSource } from 'big.js';
+import Big, { RoundingMode } from "big.js";
+import { BigSource } from "big.js";
 
-export interface Currency {
-  decimals: number;
-  name: string;
+Big.DP = 100;
+
+export type UnitList = Record<string, number>;
+
+export interface Currency<Units extends UnitList> {
+  readonly name: string;
+  readonly units: Units;
+  readonly base: Units[keyof Units];
+  readonly humanDecimals?: number;
 }
 
-export enum BTCUnit {
-  Btc = 0,
-  MSatoshi = 5,
-  Satoshi = 8
-}
+type toConversions<U extends UnitList> = { [key in keyof U]: () => Big };
+type strConversions<U extends UnitList> = { [key in keyof U]: () => string };
+type fromConversions<
+  M extends MonetaryAmount<C, U>,
+  C extends Currency<U>,
+  U extends UnitList
+> = { [key in keyof U]: (amount: BigSource) => M };
 
-export enum ETHUnit {
-  Ether = 0,
-  GWei = 9,
-  Wei = 18
-}
+export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
+  protected _amount: Big; // stored internally at minimal unit (0 DP), but arbitrary precision
+  public rm: RoundingMode = RoundingMode.RoundHalfUp;
 
-export class Bitcoin implements Currency {
-  get decimals(): number {
-    return BTCUnit.Satoshi;
+  /**
+   * Accessor for the arbitrary precision internal storage.
+   * May hold fractional amounts below the lowest currency unit (e.g. fractional Satoshi).
+   **/
+  get _rawAmount() {
+    return this._amount;
   }
 
-  get name(): string {
-    return 'Bitcoin';
-  }
-}
-
-export class Ethereum implements Currency {
-  get decimals(): number {
-    return ETHUnit.Wei;
+  private _integerAmount(rm?: RoundingMode): Big {
+    if (rm === undefined) rm = this.rm;
+    return this._amount.round(0, rm);
   }
 
-  get name(): string {
-    return 'Ethereum';
-  }
-}
-
-export class ERC20 implements Currency {
   constructor(
-    readonly name: string,
-    readonly address: string,
-    readonly decimals: number = 18
-  ) {}
-}
-
-export class Tether extends ERC20 implements Currency {
-  constructor(address: string) {
-    super('Tether', address, 6);
-  }
-}
-
-export const BTC = new Bitcoin();
-export const ETH = new Ethereum();
-
-export class MonetaryAmount<C extends Currency> {
-  protected _amount: Big;
-
-  constructor(readonly currency: C, amount: BigSource, decimals?: number) {
-    decimals = decimals ?? currency.decimals;
-    amount = new Big(amount);
-    const exponent = currency.decimals - decimals;
-    amount = amount.mul(new Big(10).pow(exponent));
+    readonly currency: C,
+    amount: BigSource,
+    unit: U[keyof U] = 0 as U[keyof U]
+  ) {
+    amount = new Big(amount).mul(new Big(10).pow(unit)); // convert to min denomination
     this._amount = amount;
   }
 
-  toString(humanFriendly = false): string {
-    if (!humanFriendly) {
-      return this._amount.toString();
-    }
-    const amount = this.toBig(0);
-    // FIXME: would be better to format directly to locale string
-    // but after conversion to 0 decimals, amount should be small
-    // enough to fit in normal number
-    return parseFloat(amount.toString()).toLocaleString();
+  toString(unit?: U[keyof U], rm?: RoundingMode): string {
+    return this.toBig(unit, rm).toString();
   }
 
-  toBig(decimals: number = this.currency.decimals): Big {
-    const exponent = this.currency.decimals - decimals;
-    return this._amount.div(new Big(10).pow(exponent));
+  toBig(unit: U[keyof U] = 0 as U[keyof U], rm?: RoundingMode): Big {
+    const ret = this._amount.div(new Big(10).pow(unit));
+    return ret.round(unit, rm === undefined? this.rm : rm); // ensure no decimal places lower than smallest unit
+  }
+
+  toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
+    let big = this.toBig(this.currency.base);
+    if (decimals !== undefined) big = big.round(decimals);
+    return big.toString();
+  }
+
+  eq(amount: this, rm?: RoundingMode): boolean {
+    return this._integerAmount(rm).eq(amount._integerAmount(rm));
   }
 
   add(amount: this): this {
@@ -113,119 +96,42 @@ export class MonetaryAmount<C extends Currency> {
   }
 
   // NOTE: needs override if constructor is overriden
-  withAmount(amount: BigSource): this {
+  withAmount(amount: BigSource, unit?: U[keyof U]): this {
     const Cls = this.constructor as new (
-      currency: Currency,
-      amount: BigSource
+      currency: Currency<U>,
+      amount: BigSource,
+      unit?: U[keyof U]
     ) => this;
-    return new Cls(this.currency, amount);
+    return new Cls(this.currency, amount, unit);
   }
+
+  to: toConversions<U> = (() =>
+    Object.fromEntries(
+      Object.entries(this.currency.units).map(([name, decimals]) => [
+        name,
+        () => this.toBig(decimals as U[keyof U]),
+      ])
+    ) as toConversions<U>)();
+
+  str: strConversions<U> = (() =>
+    Object.fromEntries(
+      Object.entries(this.currency.units).map(([name, decimals]) => [
+        name,
+        () => this.toString(decimals as U[keyof U]),
+      ])
+    ) as strConversions<U>)();
 }
 
-export class BTCAmount extends MonetaryAmount<Bitcoin> {
-  constructor(amount: BigSource, decimals?: number) {
-    super(BTC, amount, decimals);
-  }
-
-  withAmount(amount: BigSource): this {
-    const Cls = this.constructor as new (amount: BigSource) => this;
-    return new Cls(amount);
-  }
-
-  static fromSatoshi(amount: BigSource): BTCAmount {
-    return new BTCAmount(amount, BTCUnit.Satoshi);
-  }
-
-  static fromMSatoshi(amount: BigSource): BTCAmount {
-    return new BTCAmount(amount, BTCUnit.MSatoshi);
-  }
-
-  static fromBTC(amount: BigSource): BTCAmount {
-    return new BTCAmount(amount, BTCUnit.Btc);
-  }
-
-  toSatoshi(): Big {
-    return this.toBig(BTCUnit.Satoshi);
-  }
-
-  toMSatoshi(): Big {
-    return this.toBig(BTCUnit.MSatoshi);
-  }
-
-  toBTC(): Big {
-    return this.toBig(BTCUnit.Btc);
-  }
-}
-
-export class ETHAmount extends MonetaryAmount<Ethereum> {
-  constructor(amount: BigSource, decimals?: number) {
-    super(ETH, amount, decimals);
-  }
-
-  withAmount(amount: BigSource): this {
-    const Cls = this.constructor as new (amount: BigSource) => this;
-    return new Cls(amount);
-  }
-
-  static fromWei(amount: BigSource): ETHAmount {
-    return new ETHAmount(amount, ETHUnit.Wei);
-  }
-
-  static fromGWei(amount: BigSource): ETHAmount {
-    return new ETHAmount(amount, ETHUnit.GWei);
-  }
-
-  static fromEther(amount: BigSource): ETHAmount {
-    return new ETHAmount(amount, ETHUnit.Ether);
-  }
-
-  toWei(): Big {
-    return this.toBig(ETHUnit.Wei);
-  }
-
-  toGWei(): Big {
-    return this.toBig(ETHUnit.GWei);
-  }
-
-  toEther(): Big {
-    return this.toBig(ETHUnit.Ether);
-  }
-}
-
-export class ERC20Amount extends MonetaryAmount<ERC20> {}
-
-export class ExchangeRate<Base extends Currency, Counter extends Currency> {
-  /**
-   *
-   * @param base Base currency, BTC in BTC/USDT
-   * @param counter Counter currency, USDT in BTC/USDT
-   * @param rate Exchange rate: amount of `counter` needed per unit of `base`
-   *             The amount is expressed with the same number of decimals as `counter`
-   */
-  constructor(
-    readonly base: Base,
-    readonly counter: Counter,
-    readonly rate: Big
-  ) {}
-
-  toBase(amount: MonetaryAmount<Counter>): MonetaryAmount<Base> {
-    const converted = amount
-      .toBig(this.base.decimals + this.counter.decimals)
-      .div(this.rate);
-    return new MonetaryAmount(this.base, converted);
-  }
-
-  toCounter(amount: MonetaryAmount<Base>): MonetaryAmount<Counter> {
-    const converted = amount.toBig(0).mul(this.rate);
-    return new MonetaryAmount(this.counter, converted);
-  }
-
-  format(decimals = 0, precision?: number): string {
-    return this.rate.div(new Big(10).pow(decimals)).toFixed(precision);
-  }
-
-  formatHuman(precision?: number): string {
-    const formatted = this.format(this.counter.decimals, precision);
-    return parseFloat(formatted).toLocaleString();
-  }
+export function generateFromConversions<
+  M extends MonetaryAmount<C, U>,
+  C extends Currency<U>,
+  U extends UnitList
+>(currency: C, units: U): fromConversions<M, C, U> {
+  return Object.fromEntries(
+    Object.entries(units).map(([name, decimals]) => [
+      name,
+      (amount: BigSource) =>
+        new MonetaryAmount<C, U>(currency, amount, decimals as U[keyof U]) as M,
+    ])
+  ) as fromConversions<M, C, U>;
 }
