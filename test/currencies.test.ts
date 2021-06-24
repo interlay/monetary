@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { Bitcoin, Ethereum, ERC20 } from '../src/currencies';
+import { Bitcoin, Ethereum, ERC20, Polkadot } from '../src/currencies';
 
 describe("Currencies", () => {
   describe("Bitcoin", () => {
@@ -20,6 +20,16 @@ describe("Currencies", () => {
 
     it("should have the correct name", () => {
       expect(Ethereum.name).to.eq("Ethereum");
+    });
+  });
+
+  describe("DOT", () => {
+    it("should have the correct amount of decimals", () => {
+      expect(Polkadot.base).to.eq(10);
+    });
+
+    it("should have the correct name", () => {
+      expect(Polkadot.name).to.eq("Polkadot");
     });
   });
 
