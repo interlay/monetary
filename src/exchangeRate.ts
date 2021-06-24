@@ -1,4 +1,4 @@
-import Big from "big.js";
+import Big, {RoundingMode} from "big.js";
 import { Currency, MonetaryAmount, UnitList } from "./monetary";
 
 Big.DP = 100;
@@ -95,10 +95,11 @@ export class ExchangeRate<
 
   toString(
     units?: Partial<UnitMap<BaseUnit, CounterUnit>>,
-    precision?: number
+    precision?: number,
+    rm?: RoundingMode,
   ): string {
     let rate = this.denormalizeRate(this.rate, units || {});
-    if (precision !== undefined) rate = rate.round(precision);
+    if (precision !== undefined) rate = rate.round(precision, rm);
     return rate.toString();
   }
 

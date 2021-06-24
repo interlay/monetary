@@ -143,7 +143,13 @@ describe("MonetaryAmount", () => {
           fc.property(fcBig(), (rawAmount) => {
             const amountA = new DummyAmount(rawAmount);
             const amountB = new DummyAmount(rawAmount);
+            const amountC = new DummyAmount(
+              rawAmount.div(new Big(10).pow(DummyUnit.Base)),
+              DummyUnit.Base
+            );
             expect(amountA.eq(amountB));
+            expect(amountA.eq(amountC));
+            expect(amountC.eq(amountB));
           })
         );
       });
@@ -176,7 +182,9 @@ describe("MonetaryAmount", () => {
             const amountB = new DummyAmount(rawAmountB);
             const subbed = amountA.sub(amountB);
             const subbedRaw = new DummyAmount(rawAmountSubbed);
-            expect(subbed.toString()).to.eq(rawAmountSubbed.round(0).toString());
+            expect(subbed.toString()).to.eq(
+              rawAmountSubbed.round(0).toString()
+            );
             expect(subbed.eq(subbedRaw));
             expect(amountA.toString()).to.eq(rawAmountA.round(0).toString());
             expect(amountB.toString()).to.eq(rawAmountB.round(0).toString());
@@ -193,7 +201,9 @@ describe("MonetaryAmount", () => {
             const amount = new DummyAmount(rawAmount);
             const multiplied = amount.mul(multiplier);
             const multipliedRaw = new DummyAmount(rawAmountMultiplied);
-            expect(multiplied.toString()).to.eq(rawAmountMultiplied.round(0).toString());
+            expect(multiplied.toString()).to.eq(
+              rawAmountMultiplied.round(0).toString()
+            );
             expect(multiplied.eq(multipliedRaw));
             expect(amount.toString()).to.eq(rawAmount.round(0).toString());
           })
@@ -212,7 +222,9 @@ describe("MonetaryAmount", () => {
               const amount = new DummyAmount(rawAmount);
               const divided = amount.div(divisor);
               const dividedRaw = new DummyAmount(rawAmountDivided);
-              expect(divided.toString()).to.eq(rawAmountDivided.round(0).toString());
+              expect(divided.toString()).to.eq(
+                rawAmountDivided.round(0).toString()
+              );
               expect(divided.eq(dividedRaw));
               expect(amount.toString()).to.eq(rawAmount.round(0).toString());
             }
@@ -246,7 +258,7 @@ describe("MonetaryAmount", () => {
         fc.property(fcBig(), (rawAmount) => {
           Object.entries(DummyUnit).map(([unit, decimals]) => {
             const amount = new DummyAmount(rawAmount);
-            expect(amount.to).to.have.property(unit);
+            expect(amount.str).to.have.property(unit);
             const rawString = amount.toString(decimals);
             const toStr = amount.str[unit as keyof DummyUnit]();
             expect(rawString).to.equal(toStr);
