@@ -16,6 +16,6 @@ export const Bitcoin: Currency<typeof BTCUnit> = {
 } as const;
 export type Bitcoin = typeof Bitcoin;
 
-export class BTCAmount extends MonetaryAmount<typeof Bitcoin, typeof BTCUnit> {
+export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
   static from = generateFromConversions(Bitcoin, BTCUnit);
 }

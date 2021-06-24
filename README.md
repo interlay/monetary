@@ -17,13 +17,109 @@ To tackle these issues, this library should serve as a specification for a commo
 
 ## Library
 
-### Installation
+### Getting started
 
-TODO
+Install from npmjs:
+```shell
+npm i @interlay/monetary-js
+```
+Or
+```shell
+yarn add @interlay/monetary-js
+```
 
-### Testing
+### Usage
 
-TODO
+```ts
+import Big from 'big.js';
+import { BTCAmount, BTCUnit, ETHAmount, ETHUnit } from '@interlay/monetary-js';
+
+const bitcoins = BTCAmount.from.BTC(0.5);
+const ethers = ETHAmount.from.GWei(10000);
+
+// conversions to string and Big of different units
+console.log(`We have ${bitcoins.str.Satoshi()} Satoshi, and ${ethers.str.ETH()} whole ethers.`);
+const weiBig: Big = ethers.to.Wei();
+
+// the same conversions can be accessed through toString() and toBig(), by specifying the units
+console.log(`We have ${bitcoins.toString(BTCUnit.Satoshi)} Satoshi, and ${ethers.toString(ETHUnit.ETH)} whole ethers.`);
+const weiBig: Big = ethers.toBig(ETHUnit.Wei);
+
+
+// converting between different currencies
+const ETHBTCRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
+    Ethereum,
+    Bitcoin,
+    new Big(0.0598)
+);
+
+// for ETH/BTC, "base" is ETH, "counter" is BTC
+const bitcoinsAsEthers: ETHAmount = ETHBTCRate.toBase(bitcoins);
+
+// type-safe arithmetic
+const totalEthers = ethers.add(bitcoinsAsEthers);
+// ethers.add(bitcoins); // error
+
+```
+
+#### Defining your own currencies
+Monetary-js comes with Bitcoin, Ethereum and Polkadot predefined, but it is meant to be extensible for any currency. `src/currencies/bitcoin.ts` can be used as an example for the minimal work needed to define a currency. Another example is `DummyCurrency` defined inline for unit tests in `test/monetary.test.ts`
+
+The first task is to define the units, which are just key-value pairs defining the decimal places for each unit. For instance, Bitcoin consists of 10^8 Satoshi, with Satoshi being the smallest (atomic) unit that only exists in integer amounts. Thus:
+```ts
+const BTCUnit = {
+  BTC: 8,
+  Satoshi: 0,
+} as const;
+export type BTCUnit = typeof BTCUnit;
+```
+
+The next step is to define our currency, parametrising the type with our units:
+```ts
+export const Bitcoin: Currency<typeof BTCUnit> = {
+  name: "Bitcoin",
+  base: BTCUnit.BTC,
+  units: BTCUnit,
+  humanDecimals: 5,
+} as const;
+export type Bitcoin = typeof Bitcoin;
+```
+The values should be self-explanatory. The `base` field defines the "primary" unit for the currency - BTC for Bitcoin, ETH for Ethereum, DOT for Polkadot, etc. This is used for human-friendly formatting. `humanDecimals` is used for pretty-printing approximate (truncated) stringified values using `toHuman()`.
+
+At this point, the currency is usable:
+```ts
+import { Bitcoin, BTCUnit } from 'src/currencies/bitcoin';
+const btcAmount = new MonetaryAmount<Bitcoin, BTCUnit>(Bitcoin, 0.5, Bitcoin.units.BTC);
+```
+
+However, this is a bit verbose. We can subclass `MonetaryAmount` for convenience:
+```ts
+export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
+  static from = generateFromConversions(Bitcoin, BTCUnit);
+}
+```
+Notice that we define a static member `from` - recall from the examples above that this can be used as syntactic sugar to bypass the constructor. `generateFromConversions` automatically populates the required object with the necessary functions, based on the currency and unit objects.
+
+And that's all that's necessary to define a currency. Of course, this can be extended as required - for instance, `src/currencies/ethereum.ts` extends the `Currency` interface and add support for ETC20 contracts with configurable addresses.
+
+### Development
+
+Checkout the code and install the dependencies:
+```shell
+git clone https://github.com/interlay/monetary.git
+cd monetary
+yarn install
+```
+
+Build:
+```shell
+yarn build
+```
+
+And run tests:
+```shell
+yarn test
+```
 
 ## Specification
 
