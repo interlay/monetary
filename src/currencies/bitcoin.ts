@@ -18,4 +18,5 @@ export type Bitcoin = typeof Bitcoin;
 
 export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
   static from = generateFromConversions(Bitcoin, BTCUnit);
+  static zero = BTCAmount.from.BTC(0);
 }
