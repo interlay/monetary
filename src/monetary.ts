@@ -1,5 +1,4 @@
-import Big, { RoundingMode } from "big.js";
-import { BigSource } from "big.js";
+import Big, { RoundingMode, BigSource } from "big.js";
 
 Big.DP = 100;
 
@@ -61,8 +60,33 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return big.toString();
   }
 
+  private parseCmpMembers(lhs: this, rhs: this, rm?: RoundingMode): [Big, Big] {
+    return [lhs._integerAmount(rm), rhs._integerAmount(rm)];
+  }
+
   eq(amount: this, rm?: RoundingMode): boolean {
-    return this._integerAmount(rm).eq(amount._integerAmount(rm));
+    const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
+    return lhs.eq(rhs);
+  }
+
+  gt(amount: this, rm?: RoundingMode): boolean {
+    const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
+    return lhs.gt(rhs);
+  }
+
+  gte(amount: this, rm?: RoundingMode): boolean {
+    const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
+    return lhs.gte(rhs);
+  }
+
+  lt(amount: this, rm?: RoundingMode): boolean {
+    const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
+    return lhs.lt(rhs);
+  }
+
+  lte(amount: this, rm?: RoundingMode): boolean {
+    const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
+    return lhs.lte(rhs);
   }
 
   add(amount: this): this {
@@ -81,6 +105,10 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
       );
     }
     return this.withAmount(this._amount.sub(amount._amount));
+  }
+
+  isZero(): boolean {
+    return this._amount === new Big(0);
   }
 
   protected isSameCurrency(amount: this): boolean {

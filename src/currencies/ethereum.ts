@@ -29,6 +29,7 @@ export class ETHAmount extends MonetaryAmount<Ethereum, ETHUnit> {
     return new Cls(amount);
   }
   static from = generateFromConversions(Ethereum, ETHUnit);
+  static zero = ETHAmount.from.ETH(0);
 }
 
 /* Extending Currency for more flexibility */

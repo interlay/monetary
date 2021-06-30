@@ -24,4 +24,5 @@ export class PolkadotAmount extends MonetaryAmount<Polkadot, PolkadotUnit> {
     return new Cls(amount);
   }
   static from = generateFromConversions(Polkadot, PolkadotUnit);
+  static zero = PolkadotAmount.from.DOT(0);
 }
