@@ -64,46 +64,51 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return [lhs._integerAmount(rm), rhs._integerAmount(rm)];
   }
 
+  private ensureSameCurrency(counterpart: this, opName = "operation") {
+    if (!this.isSameCurrency(counterpart)) {
+      throw new Error(
+        `cannot perform ${opName} on ${this.currency.name} and ${counterpart.currency.name}`
+      );
+    }
+  }
+
   eq(amount: this, rm?: RoundingMode): boolean {
+    this.ensureSameCurrency(amount, "equality comparison");
     const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
     return lhs.eq(rhs);
   }
 
   gt(amount: this, rm?: RoundingMode): boolean {
+    this.ensureSameCurrency(amount, "comparison");
     const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
     return lhs.gt(rhs);
   }
 
   gte(amount: this, rm?: RoundingMode): boolean {
+    this.ensureSameCurrency(amount, "comparison");
     const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
     return lhs.gte(rhs);
   }
 
   lt(amount: this, rm?: RoundingMode): boolean {
+    this.ensureSameCurrency(amount, "comparison");
     const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
     return lhs.lt(rhs);
   }
 
   lte(amount: this, rm?: RoundingMode): boolean {
+    this.ensureSameCurrency(amount, "comparison");
     const [lhs, rhs] = this.parseCmpMembers(this, amount, rm);
     return lhs.lte(rhs);
   }
 
   add(amount: this): this {
-    if (!this.isSameCurrency(amount)) {
-      throw new Error(
-        `cannot add ${this.currency.name} and ${amount.currency.name}`
-      );
-    }
+    this.ensureSameCurrency(amount, "addition");
     return this.withAmount(this._amount.add(amount._amount));
   }
 
   sub(amount: this): this {
-    if (!this.isSameCurrency(amount)) {
-      throw new Error(
-        `cannot subtract ${this.currency.name} and ${amount.currency.name}`
-      );
-    }
+    this.ensureSameCurrency(amount, "subtraction");
     return this.withAmount(this._amount.sub(amount._amount));
   }
 
