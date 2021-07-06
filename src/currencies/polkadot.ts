@@ -1,5 +1,6 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { CurrencyName, Ticker } from "./names";
 
 const PolkadotUnit = {
   DOT: 10,
@@ -8,10 +9,11 @@ const PolkadotUnit = {
 export type PolkadotUnit = typeof PolkadotUnit;
 
 export const Polkadot: Currency<PolkadotUnit> = {
-  name: "Polkadot",
+  name: CurrencyName.Polkadot,
   base: PolkadotUnit.DOT,
   units: PolkadotUnit,
   humanDecimals: 3,
+  ticker: Ticker.Polkadot
 } as const;
 export type Polkadot = typeof Polkadot;
 

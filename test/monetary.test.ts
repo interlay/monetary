@@ -25,6 +25,7 @@ export const DummyCurrency: Currency<DummyUnit> = {
   name: "Dummy",
   base: DummyUnit.Base,
   units: DummyUnit,
+  ticker: "DUM",
   humanDecimals: 3,
 } as const;
 export type DummyCurrency = typeof DummyCurrency;

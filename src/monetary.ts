@@ -8,6 +8,7 @@ export interface Currency<Units extends UnitList> {
   readonly name: string;
   readonly units: Units;
   readonly base: Units[keyof Units];
+  readonly ticker: string;
   readonly humanDecimals?: number;
 }
 

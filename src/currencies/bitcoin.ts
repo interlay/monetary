@@ -1,4 +1,5 @@
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { CurrencyName, Ticker } from "./names";
 
 /* Minimal currency definition */
 
@@ -9,10 +10,11 @@ const BTCUnit = {
 export type BTCUnit = typeof BTCUnit;
 
 export const Bitcoin: Currency<typeof BTCUnit> = {
-  name: "Bitcoin",
+  name: CurrencyName.Bitcoin,
   base: BTCUnit.BTC,
   units: BTCUnit,
   humanDecimals: 5,
+  ticker: Ticker.Bitcoin
 } as const;
 export type Bitcoin = typeof Bitcoin;
 
