@@ -73,12 +73,21 @@ const BTCUnit = {
 } as const;
 export type BTCUnit = typeof BTCUnit;
 ```
+Among the units above, one entry should represent the `rawBase` unit (Satoshi in the case of Bitcoin, or an arbitrary value in the case of currencies like Tether). Intuitively, `rawBase` should be smaller than or equal to the `base` unit, described in the next step. For currencies like Tether that don't have a traditional `rawBase` value, the units definition may look like:
+```ts
+const TetherUnit = {
+  Tether: 6,
+  Raw: 0
+} as const;
+export type TetherUnit = typeof TetherUnit;
+```
 
 The next step is to define our currency, parametrising the type with our units:
 ```ts
 export const Bitcoin: Currency<typeof BTCUnit> = {
   name: "Bitcoin",
   base: BTCUnit.BTC,
+  rawBase: BTCUnit.Satoshi,
   units: BTCUnit,
   humanDecimals: 5,
 } as const;

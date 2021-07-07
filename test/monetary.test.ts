@@ -24,6 +24,7 @@ export type DummyUnit = typeof DummyUnit;
 export const DummyCurrency: Currency<DummyUnit> = {
   name: "Dummy",
   base: DummyUnit.Base,
+  rawBase: DummyUnit.Integer,
   units: DummyUnit,
   ticker: "DUM",
   humanDecimals: 3,

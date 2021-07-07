@@ -21,6 +21,14 @@ describe("ExchangeRate", () => {
     Bitcoin,
     rawRate
   );
+  const smallDenominationRawRate = new Big(0.000000000005849583145); // WEI/SAT
+  const WEISATRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
+    Ethereum,
+    Bitcoin,
+    smallDenominationRawRate,
+    Ethereum.units.Wei,
+    Bitcoin.units.Satoshi,
+  );
 
   describe("toBase", () => {
     it("should correctly convert value", () => {
@@ -93,6 +101,10 @@ describe("ExchangeRate", () => {
   describe("toString", () => {
     it("should return the rate between base units by default", () => {
       expect(ETHBTCRate.toString()).to.eq(rawRate.toString());
+    });
+
+    it("should consider rates equal using different denominations", () => {
+      expect(ETHBTCRate.toString()).to.eq(WEISATRate.toString());
     });
 
     it("should convert the rate for different currency units", () => {
