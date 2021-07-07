@@ -1,6 +1,5 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
-import { CurrencyName, Ticker } from "./names";
 
 const KusamaUnit = {
   KSM: 12,
@@ -9,11 +8,11 @@ const KusamaUnit = {
 export type KusamaUnit = typeof KusamaUnit;
 
 export const Kusama: Currency<KusamaUnit> = {
-  name: CurrencyName.Kusama,
+  name: "Kusama",
   base: KusamaUnit.KSM,
   units: KusamaUnit,
   humanDecimals: 3,
-  ticker: Ticker.Kusama
+  ticker: "KSM"
 } as const;
 export type Kusama = typeof Kusama;
 

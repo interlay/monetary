@@ -5,7 +5,6 @@ import {
   MonetaryAmount,
   UnitList,
 } from "../monetary";
-import { CurrencyName, Ticker } from "./names";
 
 const ETHUnit = {
   ETH: 18,
@@ -14,10 +13,10 @@ const ETHUnit = {
 } as const;
 export type ETHUnit = typeof ETHUnit;
 export const Ethereum: Currency<typeof ETHUnit> = {
-  name: CurrencyName.Ethereum,
+  name: "Ethereum",
   units: ETHUnit,
   base: ETHUnit.ETH,
-  ticker: Ticker.Ethereum
+  ticker: "ETH"
 } as const;
 export type Ethereum = typeof Ethereum;
 
