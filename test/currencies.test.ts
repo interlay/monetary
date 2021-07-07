@@ -42,6 +42,7 @@ describe("Currencies", () => {
       units: DaiUnits,
       base: DaiUnits.Dai,
       address: "0x",
+      ticker: "DAI"
     };
 
     const CompoundUnits = {
@@ -52,6 +53,7 @@ describe("Currencies", () => {
       units: CompoundUnits,
       base: CompoundUnits.Compound,
       address: "0x",
+      ticker: "COMP"
     };
 
     it("should have customizable decimals", () => {

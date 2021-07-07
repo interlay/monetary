@@ -16,6 +16,7 @@ export const Ethereum: Currency<typeof ETHUnit> = {
   name: "Ethereum",
   units: ETHUnit,
   base: ETHUnit.ETH,
+  ticker: "ETH"
 } as const;
 export type Ethereum = typeof Ethereum;
 
@@ -52,6 +53,9 @@ export class Tether implements ERC20<TetherUnit> {
   }
   get name(): string {
     return "Tether";
+  }
+  get ticker(): string {
+    return "USDT";
   }
 }
 
