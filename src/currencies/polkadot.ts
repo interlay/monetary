@@ -10,6 +10,7 @@ export type PolkadotUnit = typeof PolkadotUnit;
 export const Polkadot: Currency<PolkadotUnit> = {
   name: "Polkadot",
   base: PolkadotUnit.DOT,
+  rawBase: PolkadotUnit.Planck,
   units: PolkadotUnit,
   humanDecimals: 3,
   ticker: "DOT"

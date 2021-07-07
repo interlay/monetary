@@ -16,6 +16,7 @@ export const Ethereum: Currency<typeof ETHUnit> = {
   name: "Ethereum",
   units: ETHUnit,
   base: ETHUnit.ETH,
+  rawBase: ETHUnit.Wei,
   ticker: "ETH"
 } as const;
 export type Ethereum = typeof Ethereum;
