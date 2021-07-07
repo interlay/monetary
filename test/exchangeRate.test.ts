@@ -21,7 +21,7 @@ describe("ExchangeRate", () => {
     Bitcoin,
     rawRate
   );
-  const smallDenominationRawRate = new Big(0.005849583145); // WEI/SAT
+  const smallDenominationRawRate = new Big(0.000000000005849583145); // WEI/SAT
   const WEISATRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
     Ethereum,
     Bitcoin,
