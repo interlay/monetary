@@ -8,8 +8,8 @@ export interface Currency<Units extends UnitList> {
   readonly name: string;
   readonly units: Units;
   readonly base: Units[keyof Units];
+  readonly rawBase: Units[keyof Units];
   readonly ticker: string;
-  readonly rawBase?: Units[keyof Units];
   readonly humanDecimals?: number;
 }
 
@@ -41,7 +41,7 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   constructor(
     readonly currency: C,
     amount: BigSource,
-    unit: U[keyof U] = 0 as U[keyof U]
+    unit: U[keyof U] = currency.rawBase
   ) {
     amount = new Big(amount).mul(new Big(10).pow(unit)); // convert to min denomination
     this._amount = amount;
@@ -51,7 +51,7 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return this.toBig(unit, rm).toString();
   }
 
-  toBig(unit: U[keyof U] = 0 as U[keyof U], rm?: RoundingMode): Big {
+  toBig(unit: U[keyof U] = this.currency.rawBase, rm?: RoundingMode): Big {
     const ret = this._amount.div(new Big(10).pow(unit));
     return ret.round(unit, rm === undefined? this.rm : rm); // ensure no decimal places lower than smallest unit
   }

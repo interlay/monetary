@@ -87,7 +87,7 @@ export class ExchangeRate<
   }
 
   toRawBig(): Big {
-    return this.toBig({ baseUnit: 0, counterUnit: 0 } as UnitMap<
+    return this.toBig({ baseUnit: this.base.rawBase, counterUnit: this.counter.rawBase } as UnitMap<
       BaseUnit,
       CounterUnit
     >);

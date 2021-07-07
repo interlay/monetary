@@ -36,22 +36,26 @@ describe("Currencies", () => {
   describe("ERC20", () => {
     const DaiUnits = {
       Dai: 18,
+      Raw: 0
     };
     const dai: ERC20<typeof DaiUnits> = {
       name: "Dai",
       units: DaiUnits,
       base: DaiUnits.Dai,
+      rawBase: DaiUnits.Raw,
       address: "0x",
       ticker: "DAI"
     };
 
     const CompoundUnits = {
       Compound: 12,
+      Raw: 0
     };
     const comp: ERC20<typeof CompoundUnits> = {
       name: "Compound",
       units: CompoundUnits,
       base: CompoundUnits.Compound,
+      rawBase: CompoundUnits.Raw,
       address: "0x",
       ticker: "COMP"
     };

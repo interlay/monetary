@@ -41,6 +41,7 @@ export interface ERC20<Units extends UnitList> extends Currency<Units> {
 
 const TetherUnit = {
   Tether: 6,
+  Raw: 0
 } as const;
 export type TetherUnit = typeof TetherUnit;
 export class Tether implements ERC20<TetherUnit> {
@@ -51,6 +52,9 @@ export class Tether implements ERC20<TetherUnit> {
   }
   get base(): TetherUnit[keyof TetherUnit] {
     return TetherUnit.Tether;
+  }
+  get rawBase(): TetherUnit[keyof TetherUnit] {
+    return TetherUnit.Raw;
   }
   get name(): string {
     return "Tether";
