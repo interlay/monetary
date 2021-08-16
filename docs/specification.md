@@ -8,14 +8,7 @@ A *Monetary Amount* represents an amount of a specific currency.
 
 ## Identification
 
-Currencies typically have a symbol making it easy to identify the currency (e.g., USD, DAI, DOT).
-However, in a multi-chain system a currency can exist on different chains like USDT on Ethereum and Bitcoin.
-Moreover, the same currency can also exist between testnet and mainnet applications.
-As a result, we include an *origin* that defines where the asset is created.
-
-- Any currency MUST have a unique origin representing the system it was created in.
-- Any currency MUST have a symbol.
-- Any currency MUST be uniquely identifiable via its (symbol, origin) tuple.
+- Any currency MUST be uniquely identifiable via its symbol.
 
 ## Arithmetic
 
