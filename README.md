@@ -1,29 +1,40 @@
 # monetary
 
-A cross-language library to handle currencies and money.
+A library to handle currencies and money. Targeted at blockchain and cross-chain applications.
 
 ## About
 
-Building systems with money is pretty hard. Especially when the monetary amounts that the application has to deal with uses different decimals and have a different "origin", i.e., chains issuing custom tokens.
+Building systems with money is pretty hard. Especially when the monetary amounts that the application has to deal with uses different decimal representations, has numerous accounting units, and the same currency exists on multiple chains.
 
-To tackle these issues, this library should serve as a specification for a common interface to handle monetary amounts as well as provide reference implementations. Specifically, the objective for this library is to:
+To tackle these issues, this library serves as a common interface to deal with monetary amounts in a safe and predictable way.
+
+### Objectives
+
+The overall goal of this library is two-fold:
 
 1. Provide a secure currency interface. This includes safe arithmetic, type checking to ensure conversions between currencies are done correctly, safe conversion between denominations, and correct rounding.
 2. Provide a universal currency interface. The interface should be able to handle different denominations, an identifiable name and ticker, and an "origin".
 
+### Specification
+
+We provide a light-weight specification to establish a common set of rules for the monetary library. Please check the [specification](docs/specification.md) for more details.
+
 ### References
 
-- A good portion of this specification was inspired by this excellent post on [safe-money](https://ren.zone/articles/safe-money).
+A good portion of this specification was inspired by this excellent post on [safe-money](https://ren.zone/articles/safe-money).
 
 ## Library
 
 ### Getting started
 
 Install from npmjs:
+
 ```shell
 npm i @interlay/monetary-js
 ```
+
 Or
+
 ```shell
 yarn add @interlay/monetary-js
 ```
@@ -45,7 +56,6 @@ const weiBig: Big = ethers.to.Wei();
 console.log(`We have ${bitcoins.toString(BTCUnit.Satoshi)} Satoshi, and ${ethers.toString(ETHUnit.ETH)} whole ethers.`);
 const weiBig: Big = ethers.toBig(ETHUnit.Wei);
 
-
 // converting between different currencies
 const ETHBTCRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
     Ethereum,
@@ -62,10 +72,36 @@ const totalEthers = ethers.add(bitcoinsAsEthers);
 
 ```
 
-#### Defining your own currencies
+## Development
+
+### Installation
+
+Checkout the code and install the dependencies:
+
+```shell
+git clone https://github.com/interlay/monetary.git
+cd monetary
+yarn install
+```
+
+Build:
+
+```shell
+yarn build
+```
+
+And run tests:
+
+```shell
+yarn test
+```
+
+### Defining your own currencies
+
 Monetary-js comes with Bitcoin, Ethereum and Polkadot predefined, but it is meant to be extensible for any currency. `src/currencies/bitcoin.ts` can be used as an example for the minimal work needed to define a currency. Another example is `DummyCurrency` defined inline for unit tests in `test/monetary.test.ts`
 
 The first task is to define the units, which are just key-value pairs defining the decimal places for each unit. For instance, Bitcoin consists of 10^8 Satoshi, with Satoshi being the smallest (atomic) unit that only exists in integer amounts. Thus:
+
 ```ts
 const BTCUnit = {
   BTC: 8,
@@ -73,7 +109,9 @@ const BTCUnit = {
 } as const;
 export type BTCUnit = typeof BTCUnit;
 ```
+
 Among the units above, one entry should represent the `rawBase` unit (Satoshi in the case of Bitcoin, or an arbitrary value in the case of currencies like Tether). Intuitively, `rawBase` should be smaller than or equal to the `base` unit, described in the next step. For currencies like Tether that don't have a traditional `rawBase` value, the units definition may look like:
+
 ```ts
 const TetherUnit = {
   Tether: 6,
@@ -83,6 +121,7 @@ export type TetherUnit = typeof TetherUnit;
 ```
 
 The next step is to define our currency, parametrising the type with our units:
+
 ```ts
 export const Bitcoin: Currency<typeof BTCUnit> = {
   name: "Bitcoin",
@@ -93,70 +132,31 @@ export const Bitcoin: Currency<typeof BTCUnit> = {
 } as const;
 export type Bitcoin = typeof Bitcoin;
 ```
+
 The values should be self-explanatory. The `base` field defines the "primary" unit for the currency - BTC for Bitcoin, ETH for Ethereum, DOT for Polkadot, etc. This is used for human-friendly formatting. `humanDecimals` is used for pretty-printing approximate (truncated) stringified values using `toHuman()`.
 
 At this point, the currency is usable:
+
 ```ts
 import { Bitcoin, BTCUnit } from 'src/currencies/bitcoin';
 const btcAmount = new MonetaryAmount<Bitcoin, BTCUnit>(Bitcoin, 0.5, Bitcoin.units.BTC);
 ```
 
 However, this is a bit verbose. We can subclass `MonetaryAmount` for convenience:
+
 ```ts
 export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
   static from = generateFromConversions(Bitcoin, BTCUnit);
 }
 ```
+
 Notice that we define a static member `from` - recall from the examples above that this can be used as syntactic sugar to bypass the constructor. `generateFromConversions` automatically populates the required object with the necessary functions, based on the currency and unit objects.
 
 And that's all that's necessary to define a currency. Of course, this can be extended as required - for instance, `src/currencies/ethereum.ts` extends the `Currency` interface and add support for ETC20 contracts with configurable addresses.
 
-### Development
-
-Checkout the code and install the dependencies:
-```shell
-git clone https://github.com/interlay/monetary.git
-cd monetary
-yarn install
-```
-
-Build:
-```shell
-yarn build
-```
-
-And run tests:
-```shell
-yarn test
-```
-
-## Specification
-
-### Prerequisites
-
-Make sure you have `yarn` installed. Install docsify globally:
-
-```shell
-yarn global add docsify-cli
-```
-
-### Installation
-
-Clone the repository:
-
-```shell
-git clone git@github.com:interlay/monetary.git
-```
-
-Build the documentation:
-
-```shell
-docsify serve ./docs
-```
-
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are greatly appreciated.
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are greatly appreciated. Our basic [contributing guidelines](CONTRIBUTING.md) are found in this repository.
 
 1. Fork the project
 2. Create your feature branch (`git checkout -b feat/AmazingFeature`)
@@ -164,7 +164,7 @@ Contributions are what make the open source community such an amazing place to b
 4. Push to the branch (`git push origin feat/AmazingFeature`)
 5. Open a pull request
 
-If you are searching for a place to start or would like to discuss features, reach out to us:
+If you are searching for a place to start or would like to discuss features, reach out to us on the #development channel:
 
 - [Discord](https://discord.gg/KgCYK3MKSf)
 
