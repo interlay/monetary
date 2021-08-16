@@ -41,6 +41,9 @@ yarn add @interlay/monetary-js
 
 ### Usage
 
+Assuming that the library already provides the currencies you require, you can readily use them as indicated below.
+You may also add your own currencies without having to make an upstream contribution as explained in the [defining your own currencies section](#defining-your-own-currencies).
+
 ```ts
 import Big from 'big.js';
 import { BTCAmount, BTCUnit, ETHAmount, ETHUnit } from '@interlay/monetary-js';
@@ -70,30 +73,6 @@ const bitcoinsAsEthers: ETHAmount = ETHBTCRate.toBase(bitcoins);
 const totalEthers = ethers.add(bitcoinsAsEthers);
 // ethers.add(bitcoins); // error
 
-```
-
-## Development
-
-### Installation
-
-Checkout the code and install the dependencies:
-
-```shell
-git clone https://github.com/interlay/monetary.git
-cd monetary
-yarn install
-```
-
-Build:
-
-```shell
-yarn build
-```
-
-And run tests:
-
-```shell
-yarn test
 ```
 
 ### Defining your own currencies
@@ -153,6 +132,30 @@ export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
 Notice that we define a static member `from` - recall from the examples above that this can be used as syntactic sugar to bypass the constructor. `generateFromConversions` automatically populates the required object with the necessary functions, based on the currency and unit objects.
 
 And that's all that's necessary to define a currency. Of course, this can be extended as required - for instance, `src/currencies/ethereum.ts` extends the `Currency` interface and add support for ETC20 contracts with configurable addresses.
+## Development
+
+### Installation
+
+Checkout the code and install the dependencies:
+
+```shell
+git clone https://github.com/interlay/monetary.git
+cd monetary
+yarn install
+```
+
+Build:
+
+```shell
+yarn build
+```
+
+And run tests:
+
+```shell
+yarn test
+```
+
 
 ## Contributing
 
