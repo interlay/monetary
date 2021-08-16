@@ -29,8 +29,7 @@ As a result, we include an *origin* that defines where the asset is created.
 - Any monetary amount MUST be readily convertible to common denominations.
 - Any monetary amount's smallest denomination MUST be representable as an integer.
 - Where necessary, additional denominations MAY be readily returned.
-- Where necessary, the monetary amount MAY be represented as a string.
-- The currency MAY provide a truncated decimal representation for better readibility.
+- The currency MAY provide a truncated decimal representation for human-friendly readability.
 
 ## Exchange Rates
 
@@ -38,4 +37,5 @@ As a result, we include an *origin* that defines where the asset is created.
 
 ## Serialization
 
-- Any monetary amount MUST be convertible to a string representation.
+- Any monetary amount MUST be convertible to a deterministic string representation.
+- Any monetary amount MUST be able to be decoded from its corresponding string representation.
