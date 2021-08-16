@@ -21,7 +21,8 @@ We provide a light-weight specification to establish a common set of rules for t
 
 ### References
 
-A good portion of this specification was inspired by this excellent post on [safe-money](https://ren.zone/articles/safe-money).
+- A good portion of this specification was inspired by this excellent post on [safe-money](https://ren.zone/articles/safe-money).
+- There is also a great library for fiat currencies called [dinero.js](https://github.com/dinerojs/dinero.js) based on this [post](https://frontstuff.io/how-to-handle-monetary-values-in-javascript).
 
 ## Library
 
