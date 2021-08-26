@@ -115,7 +115,7 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   }
 
   isZero(): boolean {
-    return this._amount === new Big(0);
+    return this._amount.eq(new Big(0));
   }
 
   protected isSameCurrency(amount: this): boolean {
