@@ -1,4 +1,7 @@
 import Big, {RoundingMode} from "big.js";
+import { Bitcoin, BitcoinCurrencyLiteral, BTCUnit } from "./currencies";
+import { InterBTC, InterBTCCurrencyLiteral } from "./currencies/interbtc";
+import { KBTC, KBTCCurrencyLiteral } from "./currencies/kbtc";
 import { Currency, MonetaryAmount, UnitList } from "./monetary";
 
 Big.DP = 100;
@@ -129,3 +132,23 @@ export class ExchangeRate<
     );
   }
 }
+
+const one = new Big(1);
+
+export const BTC_INTERBTC = new ExchangeRate<Bitcoin, BTCUnit, InterBTC, BTCUnit>(
+  BitcoinCurrencyLiteral,
+  InterBTCCurrencyLiteral,
+  one
+);
+
+export const BTC_KBTC = new ExchangeRate<Bitcoin, BTCUnit, KBTC, BTCUnit>(
+  BitcoinCurrencyLiteral,
+  KBTCCurrencyLiteral,
+  one
+);
+
+export const INTERBTC_KBTC = new ExchangeRate<InterBTC, BTCUnit, KBTC, BTCUnit>(
+  InterBTCCurrencyLiteral,
+  KBTCCurrencyLiteral,
+  one
+);
