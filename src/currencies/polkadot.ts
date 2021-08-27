@@ -1,7 +1,7 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
-const PolkadotUnit = {
+export const PolkadotUnit = {
   DOT: 10,
   Planck: 0,
 } as const;
