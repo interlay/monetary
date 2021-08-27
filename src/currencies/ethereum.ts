@@ -12,25 +12,25 @@ const ETHUnit = {
   Wei: 0,
 } as const;
 export type ETHUnit = typeof ETHUnit;
-export const Ethereum: Currency<typeof ETHUnit> = {
+export const EthereumCurrencyLiteral: Currency<typeof ETHUnit> = {
   name: "Ethereum",
   units: ETHUnit,
   base: ETHUnit.ETH,
   rawBase: ETHUnit.Wei,
   ticker: "ETH"
 } as const;
-export type Ethereum = typeof Ethereum;
+export type Ethereum = typeof EthereumCurrencyLiteral;
 
 /* Example that extends the constructor to allow convenient `new ETHAmount(amount)` calls */
 export class ETHAmount extends MonetaryAmount<Ethereum, ETHUnit> {
   constructor(amount: BigSource, unit?: keyof ETHUnit) {
-    super(Ethereum, amount, unit ? ETHUnit[unit] : 0);
+    super(EthereumCurrencyLiteral, amount, unit ? ETHUnit[unit] : 0);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(Ethereum, ETHUnit);
+  static from = generateFromConversions(EthereumCurrencyLiteral, ETHUnit);
   static zero = ETHAmount.from.ETH(0);
 }
 

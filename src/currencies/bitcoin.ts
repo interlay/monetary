@@ -8,7 +8,7 @@ const BTCUnit = {
 } as const;
 export type BTCUnit = typeof BTCUnit;
 
-export const Bitcoin: Currency<typeof BTCUnit> = {
+export const BitcoinCurrencyLiteral: Currency<typeof BTCUnit> = {
   name: "Bitcoin",
   base: BTCUnit.BTC,
   rawBase: BTCUnit.Satoshi,
@@ -16,9 +16,9 @@ export const Bitcoin: Currency<typeof BTCUnit> = {
   humanDecimals: 5,
   ticker: "BTC"
 } as const;
-export type Bitcoin = typeof Bitcoin;
+export type Bitcoin = typeof BitcoinCurrencyLiteral;
 
 export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
-  static from = generateFromConversions(Bitcoin, BTCUnit);
+  static from = generateFromConversions(BitcoinCurrencyLiteral, BTCUnit);
   static zero = BTCAmount.from.BTC(0);
 }
