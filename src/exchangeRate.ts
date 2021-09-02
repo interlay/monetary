@@ -1,7 +1,7 @@
 import Big, {RoundingMode} from "big.js";
 import { Bitcoin, BTCUnit } from "./currencies";
-import { InterBTC } from "./currencies/interbtc";
-import { KBTC } from "./currencies/kbtc";
+import { interBTC } from "./currencies/interbtc";
+import { kBTC } from "./currencies/kbtc";
 import { Currency, MonetaryAmount, UnitList } from "./monetary";
 
 Big.DP = 100;
@@ -135,20 +135,20 @@ export class ExchangeRate<
 
 const one = new Big(1);
 
-export const BTC_INTERBTC = new ExchangeRate<Bitcoin, BTCUnit, InterBTC, BTCUnit>(
+export const BTC_INTERBTC = new ExchangeRate<Bitcoin, BTCUnit, interBTC, BTCUnit>(
   Bitcoin,
-  InterBTC,
+  interBTC,
   one
 );
 
-export const BTC_KBTC = new ExchangeRate<Bitcoin, BTCUnit, KBTC, BTCUnit>(
+export const BTC_KBTC = new ExchangeRate<Bitcoin, BTCUnit, kBTC, BTCUnit>(
   Bitcoin,
-  KBTC,
+  kBTC,
   one
 );
 
-export const INTERBTC_KBTC = new ExchangeRate<InterBTC, BTCUnit, KBTC, BTCUnit>(
-  InterBTC,
-  KBTC,
+export const INTERBTC_KBTC = new ExchangeRate<interBTC, BTCUnit, kBTC, BTCUnit>(
+  interBTC,
+  kBTC,
   one
 );
