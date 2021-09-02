@@ -2,15 +2,15 @@ import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
 export const KintsugiUnit = {
-  RawBase: 12,
-  Base: 0,
+  KINT: 12,
+  AtomicUnit: 0,
 } as const;
 export type KintsugiUnit = typeof KintsugiUnit;
 
 export const Kintsugi: Currency<KintsugiUnit> = {
   name: "Kintsugi",
-  base: KintsugiUnit.Base,
-  rawBase: KintsugiUnit.RawBase,
+  base: KintsugiUnit.KINT,
+  rawBase: KintsugiUnit.AtomicUnit,
   units: KintsugiUnit,
   humanDecimals: 3,
   ticker: "KINT"
@@ -26,5 +26,5 @@ export class KintsugiAmount extends MonetaryAmount<Kintsugi, KintsugiUnit> {
     return new Cls(amount);
   }
   static from = generateFromConversions(Kintsugi, KintsugiUnit);
-  static zero = KintsugiAmount.from.RawBase(0);
+  static zero = KintsugiAmount.from.KINT(0);
 }
