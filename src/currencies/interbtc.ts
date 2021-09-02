@@ -1,13 +1,13 @@
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 import { Bitcoin, BTCUnit } from "./bitcoin";
 
-export const InterBTC: Currency<BTCUnit> = {
+export const interBTC: Currency<BTCUnit> = {
     ...Bitcoin,
     ticker: "INTERBTC"
 } as const;
-export type InterBTC = typeof InterBTC;
+export type interBTC = typeof interBTC;
 
-export class InterBTCAmount extends MonetaryAmount<InterBTC, BTCUnit> {
+export class interBTCAmount extends MonetaryAmount<interBTC, BTCUnit> {
   static from = generateFromConversions(Bitcoin, Bitcoin.units);
-  static zero = InterBTCAmount.from.BTC(0);
+  static zero = interBTCAmount.from.BTC(0);
 }
