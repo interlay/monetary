@@ -2,7 +2,7 @@ import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
 /* Minimal currency definition */
 
-const BTCUnit = {
+export const BTCUnit = {
   BTC: 8,
   Satoshi: 0,
 } as const;

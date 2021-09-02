@@ -1,7 +1,7 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
-const KusamaUnit = {
+export const KusamaUnit = {
   KSM: 12,
   Planck: 0,
 } as const;
