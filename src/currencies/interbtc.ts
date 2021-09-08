@@ -8,6 +8,6 @@ export const interBTC: Currency<BTCUnit> = {
 export type interBTC = typeof interBTC;
 
 export class interBTCAmount extends MonetaryAmount<interBTC, BTCUnit> {
-  static from = generateFromConversions(Bitcoin, Bitcoin.units);
+  static from = generateFromConversions(interBTC, Bitcoin.units);
   static zero = interBTCAmount.from.BTC(0);
 }

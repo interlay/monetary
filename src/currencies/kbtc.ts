@@ -8,6 +8,6 @@ export const kBTC: Currency<BTCUnit> = {
 export type kBTC = typeof kBTC;
 
 export class kBTCAmount extends MonetaryAmount<kBTC, BTCUnit> {
-  static from = generateFromConversions(Bitcoin, Bitcoin.units);
+  static from = generateFromConversions(kBTC, Bitcoin.units);
   static zero = kBTCAmount.from.BTC(0);
 }

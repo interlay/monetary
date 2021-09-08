@@ -1,30 +1,30 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
-export const KusamaUnit = {
+export const KSMUnit = {
   KSM: 12,
   Planck: 0,
 } as const;
-export type KusamaUnit = typeof KusamaUnit;
+export type KSMUnit = typeof KSMUnit;
 
-export const Kusama: Currency<KusamaUnit> = {
+export const Kusama: Currency<KSMUnit> = {
   name: "Kusama",
-  base: KusamaUnit.KSM,
-  rawBase: KusamaUnit.Planck,
-  units: KusamaUnit,
+  base: KSMUnit.KSM,
+  rawBase: KSMUnit.Planck,
+  units: KSMUnit,
   humanDecimals: 3,
   ticker: "KSM"
 } as const;
 export type Kusama = typeof Kusama;
 
-export class KusamaAmount extends MonetaryAmount<Kusama, KusamaUnit> {
-  constructor(amount: BigSource, unit?: keyof KusamaUnit) {
-    super(Kusama, amount, unit ? KusamaUnit[unit] : 0);
+export class KSMAmount extends MonetaryAmount<Kusama, KSMUnit> {
+  constructor(amount: BigSource, unit?: keyof KSMUnit) {
+    super(Kusama, amount, unit ? KSMUnit[unit] : 0);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(Kusama, KusamaUnit);
-  static zero = KusamaAmount.from.KSM(0);
+  static from = generateFromConversions(Kusama, KSMUnit);
+  static zero = KSMAmount.from.KSM(0);
 }
