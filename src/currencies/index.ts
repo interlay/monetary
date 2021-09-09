@@ -4,5 +4,5 @@ export * from "./polkadot";
 export * from "./kusama";
 export * from "./interbtc";
 export * from "./kbtc";
-export * from "./kint";
-export * from "./intr";
+export * from "./kintsugi";
+export * from "./interlay";

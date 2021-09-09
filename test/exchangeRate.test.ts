@@ -2,11 +2,11 @@ import Big from "big.js";
 import { expect } from "chai";
 import {
   Bitcoin,
-  BTCAmount,
-  BTCUnit,
-  ETHAmount,
+  BitcoinAmount,
+  BitcoinUnit,
+  EthereumAmount,
   Ethereum,
-  ETHUnit,
+  EthereumUnit,
 } from "../src/currencies";
 import { ExchangeRate } from "../src/exchangeRate";
 import * as fc from "fast-check";
@@ -16,13 +16,13 @@ const fcDouble = (): fc.Arbitrary<number> =>
 
 describe("ExchangeRate", () => {
   const rawRate = new Big(0.05849583145); // ETH/BTC
-  const ETHBTCRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
+  const ETHBTCRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
     Ethereum,
     Bitcoin,
     rawRate
   );
   const smallDenominationRawRate = new Big(0.000000000005849583145); // WEI/SAT
-  const WEISATRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
+  const WEISATRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
     Ethereum,
     Bitcoin,
     smallDenominationRawRate,
@@ -37,7 +37,7 @@ describe("ExchangeRate", () => {
           fcDouble(),
           (amount) => {
             const ethAmount = ETHBTCRate.toBase(
-              BTCAmount.from.BTC(rawRate.mul(amount))
+              BitcoinAmount.from.BTC(rawRate.mul(amount))
             );
             expect(ethAmount.toString(Ethereum.base)).to.eq(
               new Big(amount).round(Ethereum.base).toString()
@@ -54,7 +54,7 @@ describe("ExchangeRate", () => {
         fc.property(
           fcDouble(),
           (amount) => {
-            const btcAmount = ETHBTCRate.toCounter(ETHAmount.from.ETH(amount));
+            const btcAmount = ETHBTCRate.toCounter(EthereumAmount.from.ETH(amount));
             expect(btcAmount.toString(Bitcoin.base)).to.eq(
               rawRate.mul(amount).round(Bitcoin.base).toString()
             );
