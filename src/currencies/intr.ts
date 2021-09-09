@@ -1,30 +1,30 @@
 import { BigSource } from "big.js";
 import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
 
-export const INTRUnit = {
+export const InterlayUnit = {
   INTR: 10,
   Planck: 0,
 } as const;
-export type INTRUnit = typeof INTRUnit;
+export type InterlayUnit = typeof InterlayUnit;
 
-export const INTR: Currency<INTRUnit> = {
+export const Interlay: Currency<InterlayUnit> = {
   name: "Interlay",
-  base: INTRUnit.INTR,
-  rawBase: INTRUnit.Planck,
-  units: INTRUnit,
+  base: InterlayUnit.INTR,
+  rawBase: InterlayUnit.Planck,
+  units: InterlayUnit,
   humanDecimals: 3,
   ticker: "INTR"
 } as const;
-export type INTR = typeof INTR;
+export type Interlay = typeof Interlay;
 
-export class INTRAmount extends MonetaryAmount<INTR, INTRUnit> {
-  constructor(amount: BigSource, unit?: keyof INTRUnit) {
-    super(INTR, amount, unit ? INTRUnit[unit] : 0);
+export class InterlayAmount extends MonetaryAmount<Interlay, InterlayUnit> {
+  constructor(amount: BigSource, unit?: keyof InterlayUnit) {
+    super(Interlay, amount, unit ? InterlayUnit[unit] : 0);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(INTR, INTRUnit);
-  static zero = INTRAmount.from.INTR(0);
+  static from = generateFromConversions(Interlay, InterlayUnit);
+  static zero = InterlayAmount.from.INTR(0);
 }

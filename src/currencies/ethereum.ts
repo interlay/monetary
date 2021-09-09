@@ -6,32 +6,32 @@ import {
   UnitList,
 } from "../monetary";
 
-const ETHUnit = {
+const EthereumUnit = {
   ETH: 18,
   GWei: 9,
   Wei: 0,
 } as const;
-export type ETHUnit = typeof ETHUnit;
-export const Ethereum: Currency<typeof ETHUnit> = {
+export type EthereumUnit = typeof EthereumUnit;
+export const Ethereum: Currency<typeof EthereumUnit> = {
   name: "Ethereum",
-  units: ETHUnit,
-  base: ETHUnit.ETH,
-  rawBase: ETHUnit.Wei,
+  units: EthereumUnit,
+  base: EthereumUnit.ETH,
+  rawBase: EthereumUnit.Wei,
   ticker: "ETH"
 } as const;
 export type Ethereum = typeof Ethereum;
 
-/* Example that extends the constructor to allow convenient `new ETHAmount(amount)` calls */
-export class ETHAmount extends MonetaryAmount<Ethereum, ETHUnit> {
-  constructor(amount: BigSource, unit?: keyof ETHUnit) {
-    super(Ethereum, amount, unit ? ETHUnit[unit] : 0);
+/* Example that extends the constructor to allow convenient `new EthereumAmount(amount)` calls */
+export class EthereumAmount extends MonetaryAmount<Ethereum, EthereumUnit> {
+  constructor(amount: BigSource, unit?: keyof EthereumUnit) {
+    super(Ethereum, amount, unit ? EthereumUnit[unit] : 0);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(Ethereum, ETHUnit);
-  static zero = ETHAmount.from.ETH(0);
+  static from = generateFromConversions(Ethereum, EthereumUnit);
+  static zero = EthereumAmount.from.ETH(0);
 }
 
 /* Extending Currency for more flexibility */

@@ -47,28 +47,28 @@ You may also add your own currencies without having to make an upstream contribu
 
 ```ts
 import Big from 'big.js';
-import { BTCAmount, BTCUnit, ETHAmount, ETHUnit } from '@interlay/monetary-js';
+import { BitcoinAmount, BitcoinUnit, EthereumAmount, EthereumUnit } from '@interlay/monetary-js';
 
-const bitcoins = BTCAmount.from.BTC(0.5);
-const ethers = ETHAmount.from.GWei(10000);
+const bitcoins = BitcoinAmount.from.BTC(0.5);
+const ethers = EthereumAmount.from.GWei(10000);
 
 // conversions to string and Big of different units
 console.log(`We have ${bitcoins.str.Satoshi()} Satoshi, and ${ethers.str.ETH()} whole ethers.`);
 const weiBig: Big = ethers.to.Wei();
 
 // the same conversions can be accessed through toString() and toBig(), by specifying the units
-console.log(`We have ${bitcoins.toString(BTCUnit.Satoshi)} Satoshi, and ${ethers.toString(ETHUnit.ETH)} whole ethers.`);
-const weiBig: Big = ethers.toBig(ETHUnit.Wei);
+console.log(`We have ${bitcoins.toString(BitcoinUnit.Satoshi)} Satoshi, and ${ethers.toString(EthereumUnit.ETH)} whole ethers.`);
+const weiBig: Big = ethers.toBig(EthereumUnit.Wei);
 
 // converting between different currencies
-const ETHBTCRate = new ExchangeRate<Ethereum, ETHUnit, Bitcoin, BTCUnit>(
+const ETHBTCRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
     Ethereum,
     Bitcoin,
     new Big(0.0598)
 );
 
 // for ETH/BTC, "base" is ETH, "counter" is BTC
-const bitcoinsAsEthers: ETHAmount = ETHBTCRate.toBase(bitcoins);
+const bitcoinsAsEthers: EthereumAmount = ETHBTCRate.toBase(bitcoins);
 
 // type-safe arithmetic
 const totalEthers = ethers.add(bitcoinsAsEthers);
@@ -83,11 +83,11 @@ Monetary-js comes with Bitcoin, Ethereum and Polkadot predefined, but it is mean
 The first task is to define the units, which are just key-value pairs defining the decimal places for each unit. For instance, Bitcoin consists of 10^8 Satoshi, with Satoshi being the smallest (atomic) unit that only exists in integer amounts. Thus:
 
 ```ts
-const BTCUnit = {
+const BitcoinUnit = {
   BTC: 8,
   Satoshi: 0,
 } as const;
-export type BTCUnit = typeof BTCUnit;
+export type BitcoinUnit = typeof BitcoinUnit;
 ```
 
 Among the units above, one entry should represent the `rawBase` unit (Satoshi in the case of Bitcoin, or an arbitrary value in the case of currencies like Tether). Intuitively, `rawBase` should be smaller than or equal to the `base` unit, described in the next step. For currencies like Tether that don't have a traditional `rawBase` value, the units definition may look like:
@@ -103,11 +103,11 @@ export type TetherUnit = typeof TetherUnit;
 The next step is to define our currency, parametrising the type with our units:
 
 ```ts
-export const Bitcoin: Currency<typeof BTCUnit> = {
+export const Bitcoin: Currency<typeof BitcoinUnit> = {
   name: "Bitcoin",
-  base: BTCUnit.BTC,
-  rawBase: BTCUnit.Satoshi,
-  units: BTCUnit,
+  base: BitcoinUnit.BTC,
+  rawBase: BitcoinUnit.Satoshi,
+  units: BitcoinUnit,
   humanDecimals: 5,
 } as const;
 export type Bitcoin = typeof Bitcoin;
@@ -118,15 +118,15 @@ The values should be self-explanatory. The `base` field defines the "primary" un
 At this point, the currency is usable:
 
 ```ts
-import { Bitcoin, BTCUnit } from 'src/currencies/bitcoin';
-const btcAmount = new MonetaryAmount<Bitcoin, BTCUnit>(Bitcoin, 0.5, Bitcoin.units.BTC);
+import { Bitcoin, BitcoinUnit } from 'src/currencies/bitcoin';
+const btcAmount = new MonetaryAmount<Bitcoin, BitcoinUnit>(Bitcoin, 0.5, Bitcoin.units.BTC);
 ```
 
 However, this is a bit verbose. We can subclass `MonetaryAmount` for convenience:
 
 ```ts
-export class BTCAmount extends MonetaryAmount<Bitcoin, BTCUnit> {
-  static from = generateFromConversions(Bitcoin, BTCUnit);
+export class BitcoinAmount extends MonetaryAmount<Bitcoin, BitcoinUnit> {
+  static from = generateFromConversions(Bitcoin, BitcoinUnit);
 }
 ```
 
