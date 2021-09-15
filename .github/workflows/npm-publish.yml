@@ -6,6 +6,23 @@ on:
             - "*"
 
 jobs:
+    changelog:
+        name: Generate changelog
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Prepare
+              id: prep
+              run: |
+                  echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+            - name: Generate changelog
+              uses: docker://quay.io/git-chglog/git-chglog:0.15.0
+              with:
+                  args: --output CHANGELOG.md ${{ steps.prep.outputs.tag }}
+            - name: Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  body_path: CHANGELOG.md
     publish:
         runs-on: ubuntu-latest
         steps:
