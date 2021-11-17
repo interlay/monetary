@@ -1,6 +1,8 @@
 import Big, { RoundingMode, BigSource } from "big.js";
 
 Big.DP = 100;
+Big.NE = -20;
+Big.PE = 20;
 
 export type UnitList = Record<string, number>;
 
@@ -57,9 +59,14 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   }
 
   toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
-    let big = this.toBig(this.currency.base);
-    if (decimals !== undefined) big = big.round(decimals);
-    return big.toString();
+    const big = this.toBig(this.currency.base);
+    let rounded: string;
+    if (decimals !== undefined) {
+      rounded = big.e >= -decimals ?
+        big.round(decimals).toString() :
+        big.toPrecision(1); // show at least 1 significant digit if rounding would give '0'
+    } else rounded = big.toString();
+    return rounded;
   }
 
   private parseCmpMembers(lhs: this, rhs: this, rm?: RoundingMode): [Big, Big] {
