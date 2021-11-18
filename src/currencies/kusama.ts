@@ -12,7 +12,7 @@ export const Kusama: Currency<KusamaUnit> = {
   base: KusamaUnit.KSM,
   rawBase: KusamaUnit.Planck,
   units: KusamaUnit,
-  humanDecimals: 3,
+  humanDecimals: 5,
   ticker: "KSM"
 } as const;
 export type Kusama = typeof Kusama;
