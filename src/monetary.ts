@@ -137,6 +137,14 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return this.withAmount(this._amount.div(divisor));
   }
 
+  min(amount: this): this {
+    return this.lt(amount) ? this : amount;
+  }
+
+  max(amount: this): this {
+    return this.gt(amount) ? this : amount;
+  }
+
   // NOTE: needs override if constructor is overriden
   withAmount(amount: BigSource, unit?: U[keyof U]): this {
     const Cls = this.constructor as new (
