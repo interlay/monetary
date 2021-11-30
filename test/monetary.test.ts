@@ -178,6 +178,32 @@ describe("MonetaryAmount", () => {
       });
     });
 
+    describe("min", () => {
+      it("should compute the minimum", () => {
+        fc.assert(
+          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+            const amountA = new DummyAmount(rawAmountA);
+            const amountB = new DummyAmount(rawAmountB);
+            const min = amountA.min(amountB);
+            expect(min.add(min).lte(amountA.add(amountB))).to.be.true;
+          })
+        );
+      });
+    });
+
+    describe("max", () => {
+      it("should compute the maximum", () => {
+        fc.assert(
+          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+            const amountA = new DummyAmount(rawAmountA);
+            const amountB = new DummyAmount(rawAmountB);
+            const max = amountA.max(amountB);
+            expect(max.add(max).gte(amountA.add(amountB))).to.be.true;
+          })
+        );
+      });
+    });
+
     describe("add", () => {
       it("should add and create new value", () => {
         fc.assert(
