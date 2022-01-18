@@ -5,4 +5,6 @@ export * from "./kusama";
 export * from "./interbtc";
 export * from "./kbtc";
 export * from "./kintsugi";
+export * from "./vote-kintsugi";
 export * from "./interlay";
+export * from "./vote-interlay";
