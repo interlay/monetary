@@ -1,4 +1,4 @@
-import Big from "big.js";
+import Big, { RoundingMode } from "big.js";
 import { expect } from "chai";
 import {
   Bitcoin,
@@ -40,7 +40,7 @@ describe("ExchangeRate", () => {
               BitcoinAmount.from.BTC(rawRate.mul(amount))
             );
             expect(ethAmount.toString(Ethereum.base)).to.eq(
-              new Big(amount).round(Ethereum.base).toString()
+              new Big(amount).round(Ethereum.base, RoundingMode.RoundDown).toString()
             );
           }
         )
@@ -56,7 +56,7 @@ describe("ExchangeRate", () => {
           (amount) => {
             const btcAmount = ETHBTCRate.toCounter(EthereumAmount.from.ETH(amount));
             expect(btcAmount.toString(Bitcoin.base)).to.eq(
-              rawRate.mul(amount).round(Bitcoin.base).toString()
+              rawRate.mul(amount).round(Bitcoin.base, RoundingMode.RoundDown).toString()
             );
           }
         )

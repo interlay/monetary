@@ -25,7 +25,7 @@ type fromConversions<
 
 export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   protected _amount: Big; // stored internally at minimal unit (0 DP), but arbitrary precision
-  public rm: RoundingMode = RoundingMode.RoundHalfUp;
+  public rm: RoundingMode = RoundingMode.RoundDown;
 
   /**
    * Accessor for the arbitrary precision internal storage.
@@ -54,7 +54,8 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   }
 
   toBig(unit: U[keyof U] = this.currency.rawBase, rm?: RoundingMode): Big {
-    const ret = this._amount.div(new Big(10).pow(unit));
+    // Dividing by `new Big(1)` changes the rounded value of `_amount`, causing tests to fail
+    const ret = unit == 0 ? this._amount : this._amount.div(new Big(10).pow(unit));
     return ret.round(unit, rm === undefined? this.rm : rm); // ensure no decimal places lower than smallest unit
   }
 
@@ -63,8 +64,8 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     let rounded: string;
     if (decimals !== undefined) {
       rounded = big.e >= -decimals ?
-        big.round(decimals).toString() :
-        big.toPrecision(1); // show at least 1 significant digit if rounding would give '0'
+        big.round(decimals, this.rm).toString() :
+        big.toPrecision(1, this.rm); // show at least 1 significant digit if rounding would give '0'
     } else rounded = big.toString();
     return rounded;
   }
