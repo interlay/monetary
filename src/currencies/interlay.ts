@@ -12,7 +12,7 @@ export const Interlay: Currency<InterlayUnit> = {
   base: InterlayUnit.INTR,
   rawBase: InterlayUnit.Planck,
   units: InterlayUnit,
-  humanDecimals: 3,
+  humanDecimals: 5,
   ticker: "INTR"
 } as const;
 export type Interlay = typeof Interlay;

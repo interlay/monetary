@@ -12,7 +12,7 @@ export const Polkadot: Currency<PolkadotUnit> = {
   base: PolkadotUnit.DOT,
   rawBase: PolkadotUnit.Planck,
   units: PolkadotUnit,
-  humanDecimals: 3,
+  humanDecimals: 5,
   ticker: "DOT"
 } as const;
 export type Polkadot = typeof Polkadot;

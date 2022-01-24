@@ -12,7 +12,7 @@ export const Kintsugi: Currency<KintsugiUnit> = {
   base: KintsugiUnit.KINT,
   rawBase: KintsugiUnit.Planck,
   units: KintsugiUnit,
-  humanDecimals: 3,
+  humanDecimals: 5,
   ticker: "KINT"
 } as const;
 export type Kintsugi = typeof Kintsugi;

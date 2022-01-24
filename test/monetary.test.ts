@@ -8,9 +8,12 @@ import {
   MonetaryAmount,
 } from "../src/monetary";
 
-const fcBig = (): fc.Arbitrary<Big> =>
+const fcBig = ({
+  min,
+  max,
+}: { min?: number; max?: number } = {}): fc.Arbitrary<Big> =>
   fc
-    .double({ next: true, noDefaultInfinity: true, noNaN: true })
+    .double({ next: true, min, max, noDefaultInfinity: true, noNaN: true })
     .map((v) => new Big(v));
 const fcDouble = (): fc.Arbitrary<number> =>
   fc.double({ next: true, noDefaultInfinity: true, noNaN: true });
@@ -86,12 +89,29 @@ describe("MonetaryAmount", () => {
   describe("toHuman", () => {
     it("should format to base unit with default decimals", () => {
       fc.assert(
-        fc.property(fcBig(), (rawAmount) => {
+        fc.property(
+          fcBig().filter(
+            (big) =>
+              big.div(new Big(10).pow(DummyCurrency.base)).e >
+              -(DummyCurrency.humanDecimals || 100)
+          ),
+          (rawAmount) => {
+            const amount = new DummyAmount(rawAmount);
+            const scaled = amount
+              .toBig(DummyCurrency.base)
+              .round(DummyCurrency.humanDecimals)
+              .toString();
+            expect(amount.toHuman()).to.eq(scaled);
+          }
+        )
+      );
+    });
+
+    it("should leave at least 1 significant digit if rounding gives 0", () => {
+      fc.assert(
+        fc.property(fcBig({ min: -0.001, max: 0.001 }), (rawAmount) => {
           const amount = new DummyAmount(rawAmount);
-          const scaled = amount
-            .toBig(DummyCurrency.base)
-            .round(DummyCurrency.humanDecimals)
-            .toString();
+          const scaled = amount.toBig(DummyCurrency.base).toPrecision(1);
           expect(amount.toHuman()).to.eq(scaled);
         })
       );
@@ -104,10 +124,11 @@ describe("MonetaryAmount", () => {
           fc.integer(-1e6, 1e6), // big.js decimal place limits
           (rawAmount, decimals) => {
             const amount = new DummyAmount(rawAmount);
-            const scaled = amount
-              .toBig(DummyCurrency.base)
-              .round(decimals)
-              .toString();
+            const base = amount.toBig(DummyCurrency.base);
+            const scaled =
+              base.e >= -decimals
+                ? base.round(decimals).toString()
+                : base.toPrecision(1);
             expect(amount.toHuman(decimals)).to.eq(scaled);
           }
         )
@@ -152,6 +173,32 @@ describe("MonetaryAmount", () => {
             expect(amountA.eq(amountB));
             expect(amountA.eq(amountC));
             expect(amountC.eq(amountB));
+          })
+        );
+      });
+    });
+
+    describe("min", () => {
+      it("should compute the minimum", () => {
+        fc.assert(
+          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+            const amountA = new DummyAmount(rawAmountA);
+            const amountB = new DummyAmount(rawAmountB);
+            const min = amountA.min(amountB);
+            expect(min.add(min).lte(amountA.add(amountB))).to.be.true;
+          })
+        );
+      });
+    });
+
+    describe("max", () => {
+      it("should compute the maximum", () => {
+        fc.assert(
+          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+            const amountA = new DummyAmount(rawAmountA);
+            const amountB = new DummyAmount(rawAmountB);
+            const max = amountA.max(amountB);
+            expect(max.add(max).gte(amountA.add(amountB))).to.be.true;
           })
         );
       });

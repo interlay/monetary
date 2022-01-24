@@ -13,7 +13,7 @@ export const Bitcoin: Currency<typeof BitcoinUnit> = {
   base: BitcoinUnit.BTC,
   rawBase: BitcoinUnit.Satoshi,
   units: BitcoinUnit,
-  humanDecimals: 5,
+  humanDecimals: 8,
   ticker: "BTC"
 } as const;
 export type Bitcoin = typeof Bitcoin;
