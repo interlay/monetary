@@ -1,4 +1,4 @@
-import Big, { BigSource } from "big.js";
+import Big, { BigSource, RoundingMode } from "big.js";
 import { expect } from "chai";
 import * as fc from "fast-check";
 
@@ -55,7 +55,7 @@ describe("MonetaryAmount", () => {
       fc.assert(
         fc.property(fcBig(), (rawAmount) => {
           const amount = new DummyAmount(rawAmount);
-          expect(amount.toString()).to.eq(rawAmount.round(0).toString());
+          expect(amount.toString()).to.eq(rawAmount.round(0, RoundingMode.RoundDown).toString());
         })
       );
     });
@@ -66,7 +66,7 @@ describe("MonetaryAmount", () => {
           Object.entries(DummyUnit).map(([_unit, decimals]) => {
             const amount = new DummyAmount(unitAmount, decimals);
             const rawAmount = scaleBig(unitAmount, decimals);
-            expect(amount.toString()).to.eq(rawAmount.round(0).toString());
+            expect(amount.toString()).to.eq(rawAmount.round(0, RoundingMode.RoundDown).toString());
           });
         })
       );
@@ -78,7 +78,7 @@ describe("MonetaryAmount", () => {
           Object.entries(DummyUnit).map(([_unit, decimals]) => {
             const amount = new DummyAmount(rawAmount);
             expect(amount.toString(decimals)).to.eq(
-              scaleBig(rawAmount, -decimals).round(decimals).toString()
+              scaleBig(rawAmount, -decimals).round(decimals, RoundingMode.RoundDown).toString()
             );
           });
         })
@@ -99,7 +99,7 @@ describe("MonetaryAmount", () => {
             const amount = new DummyAmount(rawAmount);
             const scaled = amount
               .toBig(DummyCurrency.base)
-              .round(DummyCurrency.humanDecimals)
+              .round(DummyCurrency.humanDecimals, RoundingMode.RoundDown)
               .toString();
             expect(amount.toHuman()).to.eq(scaled);
           }
@@ -127,8 +127,8 @@ describe("MonetaryAmount", () => {
             const base = amount.toBig(DummyCurrency.base);
             const scaled =
               base.e >= -decimals
-                ? base.round(decimals).toString()
-                : base.toPrecision(1);
+                ? base.round(decimals, RoundingMode.RoundDown).toString()
+                : base.toPrecision(1, RoundingMode.RoundDown);
             expect(amount.toHuman(decimals)).to.eq(scaled);
           }
         )
@@ -213,10 +213,10 @@ describe("MonetaryAmount", () => {
             const amountB = new DummyAmount(rawAmountB);
             const added = amountA.add(amountB);
             const addedRaw = new DummyAmount(rawAmountAdded);
-            expect(added.toString()).to.eq(rawAmountAdded.round(0).toString());
+            expect(added.toString()).to.eq(rawAmountAdded.round(0, RoundingMode.RoundDown).toString());
             expect(added.eq(addedRaw));
-            expect(amountA.toString()).to.eq(rawAmountA.round(0).toString());
-            expect(amountB.toString()).to.eq(rawAmountB.round(0).toString());
+            expect(amountA.toString()).to.eq(rawAmountA.round(0, RoundingMode.RoundDown).toString());
+            expect(amountB.toString()).to.eq(rawAmountB.round(0, RoundingMode.RoundDown).toString());
           })
         );
       });
@@ -232,11 +232,11 @@ describe("MonetaryAmount", () => {
             const subbed = amountA.sub(amountB);
             const subbedRaw = new DummyAmount(rawAmountSubbed);
             expect(subbed.toString()).to.eq(
-              rawAmountSubbed.round(0).toString()
+              rawAmountSubbed.round(0, RoundingMode.RoundDown).toString()
             );
             expect(subbed.eq(subbedRaw));
-            expect(amountA.toString()).to.eq(rawAmountA.round(0).toString());
-            expect(amountB.toString()).to.eq(rawAmountB.round(0).toString());
+            expect(amountA.toString()).to.eq(rawAmountA.round(0, RoundingMode.RoundDown).toString());
+            expect(amountB.toString()).to.eq(rawAmountB.round(0, RoundingMode.RoundDown).toString());
           })
         );
       });
@@ -251,10 +251,10 @@ describe("MonetaryAmount", () => {
             const multiplied = amount.mul(multiplier);
             const multipliedRaw = new DummyAmount(rawAmountMultiplied);
             expect(multiplied.toString()).to.eq(
-              rawAmountMultiplied.round(0).toString()
+              rawAmountMultiplied.round(0, RoundingMode.RoundDown).toString()
             );
             expect(multiplied.eq(multipliedRaw));
-            expect(amount.toString()).to.eq(rawAmount.round(0).toString());
+            expect(amount.toString()).to.eq(rawAmount.round(0, RoundingMode.RoundDown).toString());
           })
         );
       });
@@ -267,15 +267,15 @@ describe("MonetaryAmount", () => {
             fcBig(),
             fcDouble().filter((v) => v !== 0),
             (rawAmount, divisor) => {
-              const rawAmountDivided = rawAmount.div(divisor).round(0); // smallest units can't have decimals
+              const rawAmountDivided = rawAmount.div(divisor).round(0, RoundingMode.RoundDown); // smallest units can't have decimals
               const amount = new DummyAmount(rawAmount);
               const divided = amount.div(divisor);
               const dividedRaw = new DummyAmount(rawAmountDivided);
               expect(divided.toString()).to.eq(
-                rawAmountDivided.round(0).toString()
+                rawAmountDivided.round(0, RoundingMode.RoundDown).toString()
               );
               expect(divided.eq(dividedRaw));
-              expect(amount.toString()).to.eq(rawAmount.round(0).toString());
+              expect(amount.toString()).to.eq(rawAmount.round(0, RoundingMode.RoundDown).toString());
             }
           )
         );
