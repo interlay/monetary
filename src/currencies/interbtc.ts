@@ -3,7 +3,7 @@ import { Bitcoin, BitcoinUnit } from "./bitcoin";
 
 export const InterBtc: Currency<BitcoinUnit> = {
     ...Bitcoin,
-    ticker: "INTERBTC"
+    ticker: "IBTC"
 } as const;
 export type InterBtc = typeof InterBtc;
 
