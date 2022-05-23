@@ -15,6 +15,15 @@ const fcBig = ({
   fc
     .double({ next: true, min, max, noDefaultInfinity: true, noNaN: true })
     .map((v) => new Big(v));
+
+const fcIntAsBig = ({
+  min,
+  max
+}: { min?: number; max?: number } = {}): fc.Arbitrary<Big> =>
+fc
+  .integer({ min, max })
+  .map((v) => new Big(v));
+
 const fcDouble = (): fc.Arbitrary<number> =>
   fc.double({ next: true, noDefaultInfinity: true, noNaN: true });
 
@@ -178,10 +187,10 @@ describe("MonetaryAmount", () => {
       });
     });
 
-    describe("min", () => {
+    describe.only("min", () => {
       it("should compute the minimum", () => {
         fc.assert(
-          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+          fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
             const amountA = new DummyAmount(rawAmountA);
             const amountB = new DummyAmount(rawAmountB);
             const min = amountA.min(amountB);
@@ -191,10 +200,10 @@ describe("MonetaryAmount", () => {
       });
     });
 
-    describe("max", () => {
+    describe.only("max", () => {
       it("should compute the maximum", () => {
         fc.assert(
-          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+          fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
             const amountA = new DummyAmount(rawAmountA);
             const amountB = new DummyAmount(rawAmountB);
             const max = amountA.max(amountB);
