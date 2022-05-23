@@ -16,7 +16,7 @@ export const Usdc: Currency<UsdcUnit> = {
   base: UsdcUnit.USDC,
   rawBase: UsdcUnit.Raw,
   units: UsdcUnit,
-  humanDecimals: 6,
+  humanDecimals: 3,
   ticker: "USDC"
 } as const;
 export type Usdc = typeof Usdc;
