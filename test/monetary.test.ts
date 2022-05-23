@@ -187,7 +187,7 @@ describe("MonetaryAmount", () => {
       });
     });
 
-    describe.only("min", () => {
+    describe("min", () => {
       it("should compute the minimum", () => {
         fc.assert(
           fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
@@ -200,7 +200,7 @@ describe("MonetaryAmount", () => {
       });
     });
 
-    describe.only("max", () => {
+    describe("max", () => {
       it("should compute the maximum", () => {
         fc.assert(
           fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
