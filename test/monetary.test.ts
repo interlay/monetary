@@ -36,16 +36,19 @@ export const DummyCurrency: Currency = {
 export type DummyCurrency = typeof DummyCurrency;
 
 export class DummyAmount extends MonetaryAmount<DummyCurrency> {
-  constructor(amount: BigSource, unit?: DummyUnit[keyof DummyUnit]) {
-    const multiplier = Big(10).pow(
-      DummyCurrency.decimals - (unit || DummyCurrency.decimals)
-    );
-    super(DummyCurrency, Big(amount).mul(multiplier));
+  constructor(amount: BigSource) {
+    super(DummyCurrency, amount);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
+
+  static fromAtomic = (amount: BigSource): DummyAmount => {
+    const divisor = new Big(10).pow(DummyCurrency.decimals);
+    const finalAmount = new Big(amount).div(divisor);
+    return new DummyAmount(finalAmount);
+  };
 }
 
 function scaleBig(big: Big, decimals: number) {
@@ -54,27 +57,15 @@ function scaleBig(big: Big, decimals: number) {
 
 describe("MonetaryAmount", () => {
   describe("Constructor and toString", () => {
-    it("should use 0 decimal unit by default", () => {
+    it("should use currency decimals unit by default", () => {
       fc.assert(
-        fc.property(fcBig(), (rawAmount) => {
-          const amount = new DummyAmount(rawAmount);
+        fc.property(fcBig(), (currencyAmount) => {
+          const amount = new DummyAmount(currencyAmount);
           expect(amount.toString()).to.eq(
-            rawAmount.round(0, RoundingMode.RoundDown).toString()
+            currencyAmount
+              .round(DummyCurrency.decimals, RoundingMode.RoundDown)
+              .toString()
           );
-        })
-      );
-    });
-
-    it("should construct from other units of the currency", () => {
-      fc.assert(
-        fc.property(fcBig(), (unitAmount) => {
-          Object.entries(DummyUnit).map(([_unit, decimals]) => {
-            const amount = new DummyAmount(unitAmount, decimals);
-            const rawAmount = scaleBig(unitAmount, decimals);
-            expect(amount.toString()).to.eq(
-              rawAmount.round(0, RoundingMode.RoundDown).toString()
-            );
-          });
         })
       );
     });
@@ -90,7 +81,7 @@ describe("MonetaryAmount", () => {
               -(DummyCurrency.humanDecimals || 100)
           ),
           (rawAmount) => {
-            const amount = new DummyAmount(rawAmount);
+            const amount = DummyAmount.fromAtomic(rawAmount);
             const scaled = amount
               .toBig(DummyCurrency.decimals)
               .round(DummyCurrency.humanDecimals, RoundingMode.RoundDown)
@@ -104,14 +95,14 @@ describe("MonetaryAmount", () => {
     it("should leave at least 1 significant digit if rounding gives 0", () => {
       fc.assert(
         fc.property(fcBig({ min: -0.001, max: 0.001 }), (rawAmount) => {
-          const amount = new DummyAmount(rawAmount);
+          const amount = DummyAmount.fromAtomic(rawAmount);
           const scaled = amount.toBig(DummyCurrency.decimals).toPrecision(1);
           expect(amount.toHuman()).to.eq(scaled);
         })
       );
     });
 
-    it("should format to base unit with custom decimals", () => {
+    it("should format to decimals unit with custom decimals", () => {
       fc.assert(
         fc.property(
           fcBig(),
@@ -158,15 +149,9 @@ describe("MonetaryAmount", () => {
       it("should equal when amounts are equal", () => {
         fc.assert(
           fc.property(fcBig(), (rawAmount) => {
-            const amountA = new DummyAmount(rawAmount);
-            const amountB = new DummyAmount(rawAmount);
-            const amountC = new DummyAmount(
-              rawAmount.div(new Big(10).pow(DummyUnit.Base)),
-              DummyUnit.Base
-            );
+            const amountA = DummyAmount.fromAtomic(rawAmount);
+            const amountB = DummyAmount.fromAtomic(rawAmount);
             expect(amountA.eq(amountB));
-            expect(amountA.eq(amountC));
-            expect(amountC.eq(amountB));
           })
         );
       });
@@ -176,8 +161,8 @@ describe("MonetaryAmount", () => {
       it("should compute the minimum", () => {
         fc.assert(
           fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
-            const amountA = new DummyAmount(rawAmountA);
-            const amountB = new DummyAmount(rawAmountB);
+            const amountA = DummyAmount.fromAtomic(rawAmountA);
+            const amountB = DummyAmount.fromAtomic(rawAmountB);
             const min = amountA.min(amountB);
             expect(min.add(min).lte(amountA.add(amountB))).to.be.true;
           })
@@ -189,8 +174,8 @@ describe("MonetaryAmount", () => {
       it("should compute the maximum", () => {
         fc.assert(
           fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
-            const amountA = new DummyAmount(rawAmountA);
-            const amountB = new DummyAmount(rawAmountB);
+            const amountA = DummyAmount.fromAtomic(rawAmountA);
+            const amountB = DummyAmount.fromAtomic(rawAmountB);
             const max = amountA.max(amountB);
             expect(max.add(max).gte(amountA.add(amountB))).to.be.true;
           })
@@ -201,20 +186,20 @@ describe("MonetaryAmount", () => {
     describe("add", () => {
       it("should add and create new value", () => {
         fc.assert(
-          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+          fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
             const rawAmountAdded = rawAmountA.add(rawAmountB);
-            const amountA = new DummyAmount(rawAmountA);
-            const amountB = new DummyAmount(rawAmountB);
+            const amountA = DummyAmount.fromAtomic(rawAmountA);
+            const amountB = DummyAmount.fromAtomic(rawAmountB);
             const added = amountA.add(amountB);
-            const addedRaw = new DummyAmount(rawAmountAdded);
-            expect(added.toString()).to.eq(
+            const addedRaw = DummyAmount.fromAtomic(rawAmountAdded);
+            expect(added.toString(true)).to.eq(
               rawAmountAdded.round(0, RoundingMode.RoundDown).toString()
             );
             expect(added.eq(addedRaw));
-            expect(amountA.toString()).to.eq(
+            expect(amountA.toString(true)).to.eq(
               rawAmountA.round(0, RoundingMode.RoundDown).toString()
             );
-            expect(amountB.toString()).to.eq(
+            expect(amountB.toString(true)).to.eq(
               rawAmountB.round(0, RoundingMode.RoundDown).toString()
             );
           })
@@ -225,20 +210,20 @@ describe("MonetaryAmount", () => {
     describe("sub", () => {
       it("should subtract and create new value", () => {
         fc.assert(
-          fc.property(fcBig(), fcBig(), (rawAmountA, rawAmountB) => {
+          fc.property(fcIntAsBig(), fcIntAsBig(), (rawAmountA, rawAmountB) => {
             const rawAmountSubbed = rawAmountA.sub(rawAmountB);
-            const amountA = new DummyAmount(rawAmountA);
-            const amountB = new DummyAmount(rawAmountB);
+            const amountA = DummyAmount.fromAtomic(rawAmountA);
+            const amountB = DummyAmount.fromAtomic(rawAmountB);
             const subbed = amountA.sub(amountB);
-            const subbedRaw = new DummyAmount(rawAmountSubbed);
-            expect(subbed.toString()).to.eq(
+            const subbedRaw = DummyAmount.fromAtomic(rawAmountSubbed);
+            expect(subbed.toString(true)).to.eq(
               rawAmountSubbed.round(0, RoundingMode.RoundDown).toString()
             );
             expect(subbed.eq(subbedRaw));
-            expect(amountA.toString()).to.eq(
+            expect(amountA.toString(true)).to.eq(
               rawAmountA.round(0, RoundingMode.RoundDown).toString()
             );
-            expect(amountB.toString()).to.eq(
+            expect(amountB.toString(true)).to.eq(
               rawAmountB.round(0, RoundingMode.RoundDown).toString()
             );
           })
@@ -249,16 +234,16 @@ describe("MonetaryAmount", () => {
     describe("mul", () => {
       it("should multiply and create new value", () => {
         fc.assert(
-          fc.property(fcBig(), fcDouble(), (rawAmount, multiplier) => {
+          fc.property(fcIntAsBig(), fcDouble(), (rawAmount, multiplier) => {
             const rawAmountMultiplied = rawAmount.mul(multiplier);
-            const amount = new DummyAmount(rawAmount);
+            const amount = DummyAmount.fromAtomic(rawAmount);
             const multiplied = amount.mul(multiplier);
-            const multipliedRaw = new DummyAmount(rawAmountMultiplied);
-            expect(multiplied.toString()).to.eq(
+            const multipliedRaw = DummyAmount.fromAtomic(rawAmountMultiplied);
+            expect(multiplied.toString(true)).to.eq(
               rawAmountMultiplied.round(0, RoundingMode.RoundDown).toString()
             );
             expect(multiplied.eq(multipliedRaw));
-            expect(amount.toString()).to.eq(
+            expect(amount.toString(true)).to.eq(
               rawAmount.round(0, RoundingMode.RoundDown).toString()
             );
           })
@@ -270,20 +255,20 @@ describe("MonetaryAmount", () => {
       it("should divide and create new value", () => {
         fc.assert(
           fc.property(
-            fcBig(),
+            fcIntAsBig(),
             fcDouble().filter((v) => v !== 0),
             (rawAmount, divisor) => {
               const rawAmountDivided = rawAmount
                 .div(divisor)
                 .round(0, RoundingMode.RoundDown); // smallest units can't have decimals
-              const amount = new DummyAmount(rawAmount);
+              const amount = DummyAmount.fromAtomic(rawAmount);
               const divided = amount.div(divisor);
-              const dividedRaw = new DummyAmount(rawAmountDivided);
-              expect(divided.toString()).to.eq(
+              const dividedRaw = DummyAmount.fromAtomic(rawAmountDivided);
+              expect(divided.toString(true)).to.eq(
                 rawAmountDivided.round(0, RoundingMode.RoundDown).toString()
               );
               expect(divided.eq(dividedRaw));
-              expect(amount.toString()).to.eq(
+              expect(amount.toString(true)).to.eq(
                 rawAmount.round(0, RoundingMode.RoundDown).toString()
               );
             }

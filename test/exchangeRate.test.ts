@@ -45,7 +45,7 @@ describe("ExchangeRate", () => {
           const ethAmount = ETHBTCRate.toBase(
             new BitcoinAmount(rawRate.mul(amount))
           );
-          expect(ethAmount.toString(false)).to.eq(
+          expect(ethAmount.toString()).to.eq(
             new Big(amount)
               .round(Ethereum.decimals, RoundingMode.RoundDown)
               .toString()
@@ -60,7 +60,7 @@ describe("ExchangeRate", () => {
       fc.assert(
         fc.property(fcDouble(), (amount) => {
           const btcAmount = ETHBTCRate.toCounter(new EthereumAmount(amount));
-          expect(btcAmount.toString(false)).to.eq(
+          expect(btcAmount.toString()).to.eq(
             rawRate
               .mul(amount)
               .round(Bitcoin.decimals, RoundingMode.RoundDown)
