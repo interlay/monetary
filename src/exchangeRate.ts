@@ -1,35 +1,23 @@
-import Big, {RoundingMode} from "big.js";
-import { Bitcoin, BitcoinUnit } from "./currencies";
-import { InterBtc } from "./currencies/interbtc";
-import { KBtc } from "./currencies/kbtc";
-import { Currency, MonetaryAmount, UnitList } from "./monetary";
+import Big, { RoundingMode } from "big.js";
+import { Bitcoin, InterBtc, KBtc } from "./currencies";
+import { Currency, MonetaryAmount } from "./monetary";
 
 Big.DP = 100;
 
-export type UnitMap<B extends UnitList, C extends UnitList> = {
-  baseUnit: B[keyof B];
-  counterUnit: C[keyof C];
-};
-
-export class ExchangeRate<
-  Base extends Currency<BaseUnit>,
-  BaseUnit extends UnitList,
-  Counter extends Currency<CounterUnit>,
-  CounterUnit extends UnitList
-> {
+export class ExchangeRate<Base extends Currency, Counter extends Currency> {
   /**
    * Helper that takes a rate converting arbitrary units (e.g. Satoshi/ETH, BTC/Gwei, etc.)
    * and returns the base rate among minimal units (i.e. Satoshi/Wei, for Bitcoin and Ethereum)
    **/
   private normalizeRate(
     rate: Big,
-    { baseUnit, counterUnit }: Partial<UnitMap<BaseUnit, CounterUnit>>
+    [baseDecimals, counterDecimals]: [number, number]
   ) {
-    if (baseUnit) {
-      rate = rate.div(new Big(10).pow(baseUnit));
+    if (baseDecimals) {
+      rate = rate.div(new Big(10).pow(baseDecimals));
     }
-    if (counterUnit) {
-      rate = rate.mul(new Big(10).pow(counterUnit));
+    if (counterDecimals) {
+      rate = rate.mul(new Big(10).pow(counterDecimals));
     }
     return rate;
   }
@@ -42,13 +30,13 @@ export class ExchangeRate<
    **/
   private denormalizeRate(
     rate: Big,
-    { baseUnit, counterUnit }: Partial<UnitMap<BaseUnit, CounterUnit>>
+    [baseDecimals, counterDecimals]: [number, number]
   ) {
-    if (baseUnit === undefined) baseUnit = this.base.base;
-    if (counterUnit === undefined) counterUnit = this.counter.base;
+    if (baseDecimals === undefined) baseDecimals = this.base.decimals;
+    if (counterDecimals === undefined) counterDecimals = this.counter.decimals;
     rate = rate
-      .mul(new Big(10).pow(baseUnit))
-      .div(new Big(10).pow(counterUnit));
+      .mul(new Big(10).pow(baseDecimals))
+      .div(new Big(10).pow(counterDecimals));
     return rate;
   }
 
@@ -57,60 +45,56 @@ export class ExchangeRate<
    * @param base Base currency, BTC in BTC/USDT
    * @param counter Counter currency, USDT in BTC/USDT
    * @param rate Exchange rate: amount of `counter` needed per unit of `base`
-   * @param baseUnit (optional) Unit of base currency which `rate` expresses. Defaults to the currency base unit.
-   * E.g. "BTC" or "satoshi" in BTC/USDT, defaulting to BTC.
-   * @param counterUnit (optional) Unit of counter currency which `rate` expresses. Defaults to the currency base unit.
+   * @param baseDecimals (optional) Unit of base currency decimals which `rate` expresses. Defaults to the currency decimals.
+   * E.g. 8 for "BTC" or 0 for "satoshi" in BTC/USDT, defaulting to 8.
+   * @param counterDecimals (optional) Unit of counter currency decimals which `rate` expresses. Defaults to the currency decimals.
    */
   constructor(
     readonly base: Base,
     readonly counter: Counter,
     readonly rate: Big,
-    baseUnit: BaseUnit[keyof BaseUnit] = base.base,
-    counterUnit: CounterUnit[keyof CounterUnit] = counter.base
+    baseDecimals: number = base.decimals,
+    counterDecimals: number = counter.decimals
   ) {
-    this.rate = this.normalizeRate(rate, { baseUnit, counterUnit });
+    this.rate = this.normalizeRate(rate, [baseDecimals, counterDecimals]);
   }
 
-  toBase(
-    amount: MonetaryAmount<Counter, CounterUnit>
-  ): MonetaryAmount<Base, BaseUnit> {
+  toBase(amount: MonetaryAmount<Counter>): MonetaryAmount<Base> {
     const converted = amount.div(this.rate);
     return new MonetaryAmount(this.base, converted._rawAmount);
   }
 
-  toCounter(
-    amount: MonetaryAmount<Base, BaseUnit>
-  ): MonetaryAmount<Counter, CounterUnit> {
+  toCounter(amount: MonetaryAmount<Base>): MonetaryAmount<Counter> {
     const converted = amount.mul(this.rate);
     return new MonetaryAmount(this.counter, converted._rawAmount);
   }
 
-  toBig(units?: Partial<UnitMap<BaseUnit, CounterUnit>>): Big {
-    return this.denormalizeRate(this.rate, units || {});
+  toBig(decimals?: [number, number]): Big {
+    return this.denormalizeRate(
+      this.rate,
+      decimals || [this.base.decimals, this.counter.decimals]
+    );
   }
 
   toRawBig(): Big {
-    return this.toBig({ baseUnit: this.base.rawBase, counterUnit: this.counter.rawBase } as UnitMap<
-      BaseUnit,
-      CounterUnit
-    >);
+    return this.toBig([0, 0]);
   }
 
   toString(
-    units?: Partial<UnitMap<BaseUnit, CounterUnit>>,
+    decimals?: [number, number],
     precision?: number,
-    rm?: RoundingMode,
+    rm?: RoundingMode
   ): string {
-    let rate = this.denormalizeRate(this.rate, units || {});
+    let rate = this.denormalizeRate(
+      this.rate,
+      decimals || [this.base.decimals, this.counter.decimals]
+    );
     if (precision !== undefined) rate = rate.round(precision, rm);
     return rate.toString();
   }
 
   toRawString(): string {
-    return this.toString({ baseUnit: 0, counterUnit: 0 } as UnitMap<
-      BaseUnit,
-      CounterUnit
-    >);
+    return this.toString([0, 0]);
   }
 
   toHuman(precision?: number): string {
@@ -127,7 +111,7 @@ export class ExchangeRate<
       }
     }
     return this.toString(
-      { baseUnit: this.base.base, counterUnit: this.counter.base },
+      [this.base.decimals, this.counter.decimals],
       precision
     );
   }
@@ -135,19 +119,15 @@ export class ExchangeRate<
 
 const one = new Big(1);
 
-export const BTC_INTERBTC = new ExchangeRate<Bitcoin, BitcoinUnit, InterBtc, BitcoinUnit>(
+export const BTC_INTERBTC = new ExchangeRate<Bitcoin, InterBtc>(
   Bitcoin,
   InterBtc,
   one
 );
 
-export const BTC_KBTC = new ExchangeRate<Bitcoin, BitcoinUnit, KBtc, BitcoinUnit>(
-  Bitcoin,
-  KBtc,
-  one
-);
+export const BTC_KBTC = new ExchangeRate<Bitcoin, KBtc>(Bitcoin, KBtc, one);
 
-export const INTERBTC_KBTC = new ExchangeRate<InterBtc, BitcoinUnit, KBtc, BitcoinUnit>(
+export const INTERBTC_KBTC = new ExchangeRate<InterBtc, KBtc>(
   InterBtc,
   KBtc,
   one

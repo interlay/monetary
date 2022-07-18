@@ -4,26 +4,14 @@ Big.DP = 100;
 Big.NE = -20;
 Big.PE = 20;
 
-export type UnitList = Record<string, number>;
-
-export interface Currency<Units extends UnitList> {
+export interface Currency {
   readonly name: string;
-  readonly units: Units;
-  readonly base: Units[keyof Units];
-  readonly rawBase: Units[keyof Units];
+  readonly decimals: number;
   readonly ticker: string;
   readonly humanDecimals?: number;
 }
 
-type toConversions<U extends UnitList> = { [key in keyof U]: () => Big };
-type strConversions<U extends UnitList> = { [key in keyof U]: () => string };
-type fromConversions<
-  M extends MonetaryAmount<C, U>,
-  C extends Currency<U>,
-  U extends UnitList
-> = { [key in keyof U]: (amount: BigSource) => M };
-
-export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
+export class MonetaryAmount<C extends Currency> {
   protected _amount: Big; // stored internally at minimal unit (0 DP), but arbitrary precision
   public rm: RoundingMode = RoundingMode.RoundDown;
 
@@ -40,32 +28,29 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
     return this._amount.round(0, rm);
   }
 
-  constructor(
-    readonly currency: C,
-    amount: BigSource,
-    unit: U[keyof U] = currency.rawBase
-  ) {
-    amount = new Big(amount).mul(new Big(10).pow(unit)); // convert to min denomination
+  constructor(readonly currency: C, amount: BigSource) {
+    amount = new Big(amount).mul(new Big(10).pow(currency.decimals)); // convert to atomic denomination
     this._amount = amount;
   }
 
-  toString(unit?: U[keyof U], rm?: RoundingMode): string {
-    return this.toBig(unit, rm).toString();
+  toString(atomic?: boolean, rm?: RoundingMode): string {
+    return this.toBig(atomic ? 0 : this.currency.decimals, rm).toString();
   }
 
-  toBig(unit: U[keyof U] = this.currency.rawBase, rm?: RoundingMode): Big {
-    // Dividing by `new Big(1)` changes the rounded value of `_amount`, causing tests to fail
-    const ret = unit == 0 ? this._amount : this._amount.div(new Big(10).pow(unit));
-    return ret.round(unit, rm === undefined? this.rm : rm); // ensure no decimal places lower than smallest unit
+  toBig(unit: number = this.currency.decimals, rm?: RoundingMode): Big {
+    const ret =
+      unit == 0 ? this._amount : this._amount.div(new Big(10).pow(unit));
+    return ret.round(unit, rm === undefined ? this.rm : rm); // ensure no decimal places lower than smallest unit
   }
 
   toHuman(decimals: number | undefined = this.currency.humanDecimals): string {
-    const big = this.toBig(this.currency.base);
+    const big = this.toBig(this.currency.decimals);
     let rounded: string;
     if (decimals !== undefined) {
-      rounded = big.e >= -decimals ?
-        big.round(decimals, this.rm).toString() :
-        big.toPrecision(1, this.rm); // show at least 1 significant digit if rounding would give '0'
+      rounded =
+        big.e >= -decimals
+          ? big.round(decimals, this.rm).toString()
+          : big.toPrecision(1, this.rm); // show at least 1 significant digit if rounding would give '0'
     } else rounded = big.toString();
     return rounded;
   }
@@ -147,42 +132,11 @@ export class MonetaryAmount<C extends Currency<U>, U extends UnitList> {
   }
 
   // NOTE: needs override if constructor is overriden
-  withAmount(amount: BigSource, unit?: U[keyof U]): this {
+  withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (
-      currency: Currency<U>,
-      amount: BigSource,
-      unit?: U[keyof U]
+      currency: Currency,
+      amount: BigSource
     ) => this;
-    return new Cls(this.currency, amount, unit);
+    return new Cls(this.currency, amount);
   }
-
-  to: toConversions<U> = (() =>
-    Object.fromEntries(
-      Object.entries(this.currency.units).map(([name, decimals]) => [
-        name,
-        () => this.toBig(decimals as U[keyof U]),
-      ])
-    ) as toConversions<U>)();
-
-  str: strConversions<U> = (() =>
-    Object.fromEntries(
-      Object.entries(this.currency.units).map(([name, decimals]) => [
-        name,
-        () => this.toString(decimals as U[keyof U]),
-      ])
-    ) as strConversions<U>)();
-}
-
-export function generateFromConversions<
-  M extends MonetaryAmount<C, U>,
-  C extends Currency<U>,
-  U extends UnitList
->(currency: C, units: U): fromConversions<M, C, U> {
-  return Object.fromEntries(
-    Object.entries(units).map(([name, decimals]) => [
-      name,
-      (amount: BigSource) =>
-        new MonetaryAmount<C, U>(currency, amount, decimals as U[keyof U]) as M,
-    ])
-  ) as fromConversions<M, C, U>;
 }
