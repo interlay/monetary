@@ -9,7 +9,7 @@ export const VoteInterlay: Currency = {
 export type VoteInterlay = typeof VoteInterlay;
 
 export class VoteInterlayAmount extends MonetaryAmount<VoteInterlay> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(VoteInterlay, amount);
   }
   withAmount(amount: BigSource): this {

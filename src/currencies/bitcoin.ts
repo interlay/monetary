@@ -12,10 +12,9 @@ export const Bitcoin: Currency = {
 export type Bitcoin = typeof Bitcoin;
 
 export class BitcoinAmount extends MonetaryAmount<Bitcoin> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(Bitcoin, amount);
   }
-
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);

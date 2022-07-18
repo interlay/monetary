@@ -11,10 +11,9 @@ export type Ethereum = typeof Ethereum;
 
 /* Example that extends the constructor to allow convenient `new EthereumAmount(amount)` calls */
 export class EthereumAmount extends MonetaryAmount<Ethereum> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(Ethereum, amount);
   }
-
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);

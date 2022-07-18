@@ -9,7 +9,7 @@ export const VoteKintsugi: Currency = {
 export type VoteKintsugi = typeof VoteKintsugi;
 
 export class VoteKintsugiAmount extends MonetaryAmount<VoteKintsugi> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(VoteKintsugi, amount);
   }
   withAmount(amount: BigSource): this {

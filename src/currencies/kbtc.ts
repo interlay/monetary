@@ -9,10 +9,9 @@ export const KBtc: Currency = {
 export type KBtc = typeof KBtc;
 
 export class KBtcAmount extends MonetaryAmount<KBtc> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(KBtc, amount);
   }
-
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);

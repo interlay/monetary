@@ -10,10 +10,9 @@ export const Kusama: Currency = {
 export type Kusama = typeof Kusama;
 
 export class KusamaAmount extends MonetaryAmount<Kusama> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(Kusama, amount);
   }
-
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);

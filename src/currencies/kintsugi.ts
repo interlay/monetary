@@ -10,10 +10,9 @@ export const Kintsugi: Currency = {
 export type Kintsugi = typeof Kintsugi;
 
 export class KintsugiAmount extends MonetaryAmount<Kintsugi> {
-  constructor(amount: number) {
+  constructor(amount: BigSource) {
     super(Kintsugi, amount);
   }
-
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);

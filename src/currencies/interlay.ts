@@ -1,3 +1,4 @@
+import { BigSource } from "big.js";
 import { Currency, MonetaryAmount } from "../monetary";
 
 export const InterlayUnit = {
@@ -15,5 +16,13 @@ export const Interlay: Currency = {
 export type Interlay = typeof Interlay;
 
 export class InterlayAmount extends MonetaryAmount<Interlay> {
-  static zero = () => new InterlayAmount(Interlay, 0);
+  constructor(amount: BigSource) {
+    super(Interlay, amount);
+  }
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
+
+  static zero = () => new InterlayAmount(0);
 }
