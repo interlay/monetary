@@ -61,12 +61,19 @@ export class ExchangeRate<Base extends Currency, Counter extends Currency> {
 
   toBase(amount: MonetaryAmount<Counter>): MonetaryAmount<Base> {
     const converted = amount.div(this.rate);
-    return new MonetaryAmount(this.base, converted._rawAmount);
+
+    const baseAmount = converted._rawAmount.div(
+      new Big(10).pow(this.base.decimals)
+    );
+    return new MonetaryAmount(this.base, baseAmount);
   }
 
   toCounter(amount: MonetaryAmount<Base>): MonetaryAmount<Counter> {
     const converted = amount.mul(this.rate);
-    return new MonetaryAmount(this.counter, converted._rawAmount);
+    const counterAmount = converted._rawAmount.div(
+      new Big(10).pow(this.counter.decimals)
+    );
+    return new MonetaryAmount(this.counter, counterAmount);
   }
 
   toBig(decimals?: [number, number]): Big {
