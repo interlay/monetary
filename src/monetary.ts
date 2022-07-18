@@ -99,12 +99,12 @@ export class MonetaryAmount<C extends Currency> {
 
   add(amount: this): this {
     this.ensureSameCurrency(amount, "addition");
-    return this.withAmount(this._amount.add(amount._amount));
+    return this.withAtomicAmount(this._amount.add(amount._amount));
   }
 
   sub(amount: this): this {
     this.ensureSameCurrency(amount, "subtraction");
-    return this.withAmount(this._amount.sub(amount._amount));
+    return this.withAtomicAmount(this._amount.sub(amount._amount));
   }
 
   isZero(): boolean {
@@ -116,11 +116,11 @@ export class MonetaryAmount<C extends Currency> {
   }
 
   mul(multiplier: BigSource): this {
-    return this.withAmount(this._amount.mul(multiplier));
+    return this.withAtomicAmount(this._amount.mul(multiplier));
   }
 
   div(divisor: BigSource): this {
-    return this.withAmount(this._amount.div(divisor));
+    return this.withAtomicAmount(this._amount.div(divisor));
   }
 
   min(amount: this): this {
@@ -138,5 +138,13 @@ export class MonetaryAmount<C extends Currency> {
       amount: BigSource
     ) => this;
     return new Cls(this.currency, amount);
+  }
+
+  // NOTE: may need override if withAmount signature is overriden
+  withAtomicAmount(amount: BigSource): this {
+    const baseAmount = new Big(amount).div(
+      new Big(10).pow(this.currency.decimals)
+    );
+    return this.withAmount(baseAmount);
   }
 }
