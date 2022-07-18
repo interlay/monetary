@@ -1,4 +1,3 @@
-import Big from "big.js";
 import { expect } from "chai";
 
 import { Bitcoin, Ethereum, Polkadot } from "../src/currencies";
