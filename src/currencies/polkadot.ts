@@ -1,5 +1,5 @@
 import { BigSource } from "big.js";
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { Currency, MonetaryAmount } from "../monetary";
 
 export const PolkadotUnit = {
   DOT: 10,
@@ -7,24 +7,21 @@ export const PolkadotUnit = {
 } as const;
 export type PolkadotUnit = typeof PolkadotUnit;
 
-export const Polkadot: Currency<PolkadotUnit> = {
+export const Polkadot: Currency = {
   name: "Polkadot",
-  base: PolkadotUnit.DOT,
-  rawBase: PolkadotUnit.Planck,
-  units: PolkadotUnit,
+  decimals: 10,
   humanDecimals: 5,
-  ticker: "DOT"
+  ticker: "DOT",
 } as const;
 export type Polkadot = typeof Polkadot;
 
-export class PolkadotAmount extends MonetaryAmount<Polkadot, PolkadotUnit> {
-  constructor(amount: BigSource, unit?: keyof PolkadotUnit) {
-    super(Polkadot, amount, unit ? PolkadotUnit[unit] : 0);
+export class PolkadotAmount extends MonetaryAmount<Polkadot> {
+  constructor(amount: BigSource) {
+    super(Polkadot, amount);
   }
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(Polkadot, PolkadotUnit);
-  static zero = PolkadotAmount.from.DOT(0);
+  static zero = () => new PolkadotAmount(0);
 }

@@ -1,13 +1,21 @@
-import { Kintsugi, KintsugiUnit } from ".";
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { BigSource } from "big.js";
+import { Kintsugi } from ".";
+import { Currency, MonetaryAmount } from "../monetary";
 
-export const VoteKintsugi: Currency<KintsugiUnit> = {
-    ...Kintsugi,
-    ticker: "VKINT"
+export const VoteKintsugi: Currency = {
+  ...Kintsugi,
+  ticker: "VKINT",
 } as const;
 export type VoteKintsugi = typeof VoteKintsugi;
 
-export class VoteKintsugiAmount extends MonetaryAmount<VoteKintsugi, KintsugiUnit> {
-  static from = generateFromConversions(VoteKintsugi, Kintsugi.units);
-  static zero = VoteKintsugiAmount.from.KINT(0);
+export class VoteKintsugiAmount extends MonetaryAmount<VoteKintsugi> {
+  constructor(amount: number) {
+    super(VoteKintsugi, amount);
+  }
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
+
+  static zero = () => new VoteKintsugiAmount(0);
 }

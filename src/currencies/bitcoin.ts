@@ -1,24 +1,25 @@
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { BigSource } from "big.js";
+import { Currency, MonetaryAmount } from "../monetary";
 
 /* Minimal currency definition */
 
-export const BitcoinUnit = {
-  BTC: 8,
-  Satoshi: 0,
-} as const;
-export type BitcoinUnit = typeof BitcoinUnit;
-
-export const Bitcoin: Currency<typeof BitcoinUnit> = {
+export const Bitcoin: Currency = {
   name: "Bitcoin",
-  base: BitcoinUnit.BTC,
-  rawBase: BitcoinUnit.Satoshi,
-  units: BitcoinUnit,
+  decimals: 8,
   humanDecimals: 8,
-  ticker: "BTC"
+  ticker: "BTC",
 } as const;
 export type Bitcoin = typeof Bitcoin;
 
-export class BitcoinAmount extends MonetaryAmount<Bitcoin, BitcoinUnit> {
-  static from = generateFromConversions(Bitcoin, BitcoinUnit);
-  static zero = BitcoinAmount.from.BTC(0);
+export class BitcoinAmount extends MonetaryAmount<Bitcoin> {
+  constructor(amount: number) {
+    super(Bitcoin, amount);
+  }
+
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
+
+  static zero = () => new BitcoinAmount(0);
 }

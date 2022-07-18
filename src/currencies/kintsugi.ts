@@ -1,30 +1,23 @@
 import { BigSource } from "big.js";
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
+import { Currency, MonetaryAmount } from "../monetary";
 
-export const KintsugiUnit = {
-  KINT: 12,
-  Planck: 0,
-} as const;
-export type KintsugiUnit = typeof KintsugiUnit;
-
-export const Kintsugi: Currency<KintsugiUnit> = {
+export const Kintsugi: Currency = {
   name: "Kintsugi",
-  base: KintsugiUnit.KINT,
-  rawBase: KintsugiUnit.Planck,
-  units: KintsugiUnit,
+  decimals: 12,
   humanDecimals: 5,
-  ticker: "KINT"
+  ticker: "KINT",
 } as const;
 export type Kintsugi = typeof Kintsugi;
 
-export class KintsugiAmount extends MonetaryAmount<Kintsugi, KintsugiUnit> {
-  constructor(amount: BigSource, unit?: keyof KintsugiUnit) {
-    super(Kintsugi, amount, unit ? KintsugiUnit[unit] : 0);
+export class KintsugiAmount extends MonetaryAmount<Kintsugi> {
+  constructor(amount: number) {
+    super(Kintsugi, amount);
   }
+
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (amount: BigSource) => this;
     return new Cls(amount);
   }
-  static from = generateFromConversions(Kintsugi, KintsugiUnit);
-  static zero = KintsugiAmount.from.KINT(0);
+
+  static zero = () => new KintsugiAmount(0);
 }

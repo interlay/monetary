@@ -1,13 +1,22 @@
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
-import { Bitcoin, BitcoinUnit } from "./bitcoin";
+import { BigSource } from "big.js";
+import { Currency, MonetaryAmount } from "../monetary";
+import { Bitcoin } from "./bitcoin";
 
-export const KBtc: Currency<BitcoinUnit> = {
-    ...Bitcoin,
-    ticker: "KBTC"
+export const KBtc: Currency = {
+  ...Bitcoin,
+  ticker: "KBTC",
 } as const;
 export type KBtc = typeof KBtc;
 
-export class KBtcAmount extends MonetaryAmount<KBtc, BitcoinUnit> {
-  static from = generateFromConversions(KBtc, Bitcoin.units);
-  static zero = KBtcAmount.from.BTC(0);
+export class KBtcAmount extends MonetaryAmount<KBtc> {
+  constructor(amount: number) {
+    super(KBtc, amount);
+  }
+
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
+
+  static zero = () => new KBtcAmount(0);
 }

@@ -1,13 +1,22 @@
-import { Currency, generateFromConversions, MonetaryAmount } from "../monetary";
-import { Bitcoin, BitcoinUnit } from "./bitcoin";
+import { BigSource } from "big.js";
+import { Currency, MonetaryAmount } from "../monetary";
+import { Bitcoin } from "./bitcoin";
 
-export const InterBtc: Currency<BitcoinUnit> = {
-    ...Bitcoin,
-    ticker: "IBTC"
+export const InterBtc: Currency = {
+  ...Bitcoin,
+  ticker: "IBTC",
 } as const;
 export type InterBtc = typeof InterBtc;
 
-export class InterBtcAmount extends MonetaryAmount<InterBtc, BitcoinUnit> {
-  static from = generateFromConversions(InterBtc, Bitcoin.units);
-  static zero = InterBtcAmount.from.BTC(0);
+export class InterBtcAmount extends MonetaryAmount<InterBtc> {
+  constructor(amount: number) {
+    super(InterBtc, amount);
+  }
+
+  withAmount(amount: BigSource): this {
+    const Cls = this.constructor as new (amount: BigSource) => this;
+    return new Cls(amount);
+  }
+
+  static zero = () => new InterBtcAmount(0);
 }
