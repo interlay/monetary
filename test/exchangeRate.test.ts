@@ -3,10 +3,8 @@ import { expect } from "chai";
 import {
   Bitcoin,
   BitcoinAmount,
-  BitcoinUnit,
   EthereumAmount,
   Ethereum,
-  EthereumUnit,
 } from "../src/currencies";
 import { ExchangeRate } from "../src/exchangeRate";
 import * as fc from "fast-check";
@@ -16,34 +14,43 @@ const fcDouble = (): fc.Arbitrary<number> =>
 
 describe("ExchangeRate", () => {
   const rawRate = new Big(0.05849583145); // ETH/BTC
-  const ETHBTCRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
+  const ETHBTCRate = new ExchangeRate<Ethereum, Bitcoin>(
     Ethereum,
     Bitcoin,
     rawRate
   );
   const smallDenominationRawRate = new Big(0.000000000005849583145); // WEI/SAT
-  const WEISATRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
+  const WEISATRate = new ExchangeRate<Ethereum, Bitcoin>(
     Ethereum,
     Bitcoin,
     smallDenominationRawRate,
-    Ethereum.units.Wei,
-    Bitcoin.units.Satoshi,
+    0,
+    0
   );
+
+  const ethUnits = {
+    ETH: 18,
+    Gwei: 9,
+    Wei: 0,
+  };
+  const btcUnits = {
+    BTC: 8,
+    Satoshi: 0,
+  };
 
   describe("toBase", () => {
     it("should correctly convert value", () => {
       fc.assert(
-        fc.property(
-          fcDouble(),
-          (amount) => {
-            const ethAmount = ETHBTCRate.toBase(
-              BitcoinAmount.from.BTC(rawRate.mul(amount))
-            );
-            expect(ethAmount.toString(Ethereum.base)).to.eq(
-              new Big(amount).round(Ethereum.base, RoundingMode.RoundDown).toString()
-            );
-          }
-        )
+        fc.property(fcDouble(), (amount) => {
+          const ethAmount = ETHBTCRate.toBase(
+            new BitcoinAmount(rawRate.mul(amount))
+          );
+          expect(ethAmount.toString(false)).to.eq(
+            new Big(amount)
+              .round(Ethereum.decimals, RoundingMode.RoundDown)
+              .toString()
+          );
+        })
       );
     });
   });
@@ -51,15 +58,15 @@ describe("ExchangeRate", () => {
   describe("toCounter", () => {
     it("should correctly convert value", () => {
       fc.assert(
-        fc.property(
-          fcDouble(),
-          (amount) => {
-            const btcAmount = ETHBTCRate.toCounter(EthereumAmount.from.ETH(amount));
-            expect(btcAmount.toString(Bitcoin.base)).to.eq(
-              rawRate.mul(amount).round(Bitcoin.base, RoundingMode.RoundDown).toString()
-            );
-          }
-        )
+        fc.property(fcDouble(), (amount) => {
+          const btcAmount = ETHBTCRate.toCounter(new EthereumAmount(amount));
+          expect(btcAmount.toString(false)).to.eq(
+            rawRate
+              .mul(amount)
+              .round(Bitcoin.decimals, RoundingMode.RoundDown)
+              .toString()
+          );
+        })
       );
     });
   });
@@ -70,17 +77,12 @@ describe("ExchangeRate", () => {
     });
 
     it("should convert the rate for different currency units", () => {
-      Object.entries(Bitcoin.units).map(([btcUnit, btcDecimals]) => {
-        Object.entries(Ethereum.units).map(([ethUnit, ethDecimals]) => {
+      Object.entries(btcUnits).map(([btcUnit, btcDecimals]) => {
+        Object.entries(ethUnits).map(([ethUnit, ethDecimals]) => {
           const normalisedRate = rawRate
-            .mul(new Big(10).pow(Bitcoin.base - btcDecimals)) // ETH/btcUnit
-            .div(new Big(10).pow(Ethereum.base - ethDecimals)); // ethUnit/btcUnit
-          expect(
-            ETHBTCRate.toBig({
-              baseUnit: ethDecimals,
-              counterUnit: btcDecimals,
-            }).toString()
-          ).to.eq(
+            .mul(new Big(10).pow(Bitcoin.decimals - btcDecimals)) // ETH/btcUnit
+            .div(new Big(10).pow(Ethereum.decimals - ethDecimals)); // ethUnit/btcUnit
+          expect(ETHBTCRate.toBig([ethDecimals, btcDecimals]).toString()).to.eq(
             normalisedRate.toString(),
             `Formatting failed with ${btcUnit} against ${ethUnit}`
           );
@@ -92,8 +94,8 @@ describe("ExchangeRate", () => {
   describe("toRawBig", () => {
     it("should return the normalised rate (between smallest currency units)", () => {
       const normalisedRate = rawRate
-        .mul(new Big(10).pow(Bitcoin.base)) // ETH/Sat
-        .div(new Big(10).pow(Ethereum.base)); // Wei/Sat
+        .mul(new Big(10).pow(Bitcoin.decimals)) // ETH/Sat
+        .div(new Big(10).pow(Ethereum.decimals)); // Wei/Sat
       expect(ETHBTCRate.toRawBig().toString()).to.eq(normalisedRate.toString());
     });
   });
@@ -108,17 +110,12 @@ describe("ExchangeRate", () => {
     });
 
     it("should convert the rate for different currency units", () => {
-      Object.entries(Bitcoin.units).map(([btcUnit, btcDecimals]) => {
-        Object.entries(Ethereum.units).map(([ethUnit, ethDecimals]) => {
+      Object.entries(btcUnits).map(([btcUnit, btcDecimals]) => {
+        Object.entries(ethUnits).map(([ethUnit, ethDecimals]) => {
           const normalisedRate = rawRate
-            .mul(new Big(10).pow(Bitcoin.base - btcDecimals)) // ETH/btcUnit
-            .div(new Big(10).pow(Ethereum.base - ethDecimals)); // ethUnit/btcUnit
-          expect(
-            ETHBTCRate.toString({
-              baseUnit: ethDecimals,
-              counterUnit: btcDecimals,
-            })
-          ).to.eq(
+            .mul(new Big(10).pow(Bitcoin.decimals - btcDecimals)) // ETH/btcUnit
+            .div(new Big(10).pow(Ethereum.decimals - ethDecimals)); // ethUnit/btcUnit
+          expect(ETHBTCRate.toString([ethDecimals, btcDecimals])).to.eq(
             normalisedRate.toString(),
             `Formatting failed with ${btcUnit} against ${ethUnit}`
           );
@@ -130,8 +127,8 @@ describe("ExchangeRate", () => {
   describe("toRawString", () => {
     it("should return the normalised rate (between smallest currency units)", () => {
       const normalisedRate = rawRate
-        .mul(new Big(10).pow(Bitcoin.base)) // ETH/Sat
-        .div(new Big(10).pow(Ethereum.base)); // Wei/Sat
+        .mul(new Big(10).pow(Bitcoin.decimals)) // ETH/Sat
+        .div(new Big(10).pow(Ethereum.decimals)); // Wei/Sat
       expect(ETHBTCRate.toRawString()).to.eq(normalisedRate.toString());
     });
   });
