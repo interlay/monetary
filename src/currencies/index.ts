@@ -8,4 +8,3 @@ export * from "./kintsugi";
 export * from "./vote-kintsugi";
 export * from "./interlay";
 export * from "./vote-interlay";
-export * from "./usdc";
