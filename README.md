@@ -12,8 +12,8 @@ To tackle these issues, this library serves as a common interface to deal with m
 
 The overall goal of this library is two-fold:
 
-1. Provide a secure currency interface. This includes safe arithmetic, type checking to ensure conversions between currencies are done correctly, safe conversion between denominations, and correct rounding.
-2. Provide a universal currency interface. The interface should be able to handle different denominations, an identifiable name and ticker, and an "origin".
+1. Provide a secure currency interface. This includes safe arithmetic, type checking to ensure conversions between currencies are done correctly, and correct rounding.
+2. Provide a universal currency interface. The interface should be able to have an identifiable name and ticker, and an "origin".
 
 ### Specification
 
@@ -46,25 +46,29 @@ Assuming that the library already provides the currencies you require, you can r
 You may also add your own currencies without having to make an upstream contribution as explained in the [defining your own currencies section](#defining-your-own-currencies).
 
 ```ts
-import Big from 'big.js';
-import { BitcoinAmount, BitcoinUnit, EthereumAmount, EthereumUnit } from '@interlay/monetary-js';
+import Big from "big.js";
+import { Bitcoin, Ethereum, BitcoinAmount, EthereumAmount, ExchangeRate} from "@interlay/monetary-js";
 
-const bitcoins = BitcoinAmount.from.BTC(0.5);
-const ethers = EthereumAmount.from.GWei(10000);
+const bitcoins = new BitcoinAmount(0.5);
+const ethers = new EthereumAmount(new Big(1).mul(10).pow(-9)); // one gwei
+const sameEthers = new EthereumAmount("1e-9"); // also one gwei
 
 // conversions to string and Big of different units
-console.log(`We have ${bitcoins.str.Satoshi()} Satoshi, and ${ethers.str.ETH()} whole ethers.`);
-const weiBig: Big = ethers.to.Wei();
+console.log(`We have ${bitcoins.toString()} BTC, and ${ethers.toString()} ethers.`);
 
-// the same conversions can be accessed through toString() and toBig(), by specifying the units
-console.log(`We have ${bitcoins.toString(BitcoinUnit.Satoshi)} Satoshi, and ${ethers.toString(EthereumUnit.ETH)} whole ethers.`);
-const weiBig: Big = ethers.toBig(EthereumUnit.Wei);
+const weiBig: Big = ethers.toBig(0); // value in atomic units (ETH * 10^-18 aka. wei)
+const gweiBig: Big = ethers.toBig(9); // value in gwei (wei * 10^9)
+const alsoEthBig: Big = ethers.toBig(18); // value in eth (wei * 10^18)
+const ethBig: Big = ethers.toBig(); // value in eth (no parameter => assumes "natural" denomination)
+
+const satoshiString: string = bitcoins.toString(true); // value as string in atomic units (satoshi)
+const btcString: string = bitcoins.toString(); // value as string in "natural" units (btc)
 
 // converting between different currencies
-const ETHBTCRate = new ExchangeRate<Ethereum, EthereumUnit, Bitcoin, BitcoinUnit>(
-    Ethereum,
-    Bitcoin,
-    new Big(0.0598)
+const ETHBTCRate = new ExchangeRate<Ethereum, Bitcoin>(
+  Ethereum,
+  Bitcoin,
+  new Big(0.0598)
 );
 
 // for ETH/BTC, "base" is ETH, "counter" is BTC
@@ -73,66 +77,50 @@ const bitcoinsAsEthers: EthereumAmount = ETHBTCRate.toBase(bitcoins);
 // type-safe arithmetic
 const totalEthers = ethers.add(bitcoinsAsEthers);
 // ethers.add(bitcoins); // error
-
 ```
 
 ### Defining your own currencies
 
 Monetary-js comes with Bitcoin, Ethereum and Polkadot predefined, but it is meant to be extensible for any currency. `src/currencies/bitcoin.ts` can be used as an example for the minimal work needed to define a currency. Another example is `DummyCurrency` defined inline for unit tests in `test/monetary.test.ts`
 
-The first task is to define the units, which are just key-value pairs defining the decimal places for each unit. For instance, Bitcoin consists of 10^8 Satoshi, with Satoshi being the smallest (atomic) unit that only exists in integer amounts. Thus:
-
-```ts
-const BitcoinUnit = {
-  BTC: 8,
-  Satoshi: 0,
-} as const;
-export type BitcoinUnit = typeof BitcoinUnit;
-```
-
-Among the units above, one entry should represent the `rawBase` unit (Satoshi in the case of Bitcoin, or an arbitrary value in the case of currencies like Tether). Intuitively, `rawBase` should be smaller than or equal to the `base` unit, described in the next step. For currencies like Tether that don't have a traditional `rawBase` value, the units definition may look like:
-
-```ts
-const TetherUnit = {
-  Tether: 6,
-  Raw: 0
-} as const;
-export type TetherUnit = typeof TetherUnit;
-```
-
-The next step is to define our currency, parametrising the type with our units:
+The first step is to define our currency, parametrising the type with decimals. 
 
 ```ts
 export const Bitcoin: Currency<typeof BitcoinUnit> = {
   name: "Bitcoin",
-  base: BitcoinUnit.BTC,
-  rawBase: BitcoinUnit.Satoshi,
-  units: BitcoinUnit,
-  humanDecimals: 5,
+  ticker: "BTC",
+  decimals: 8,
+  humanDecimals: 5
 } as const;
 export type Bitcoin = typeof Bitcoin;
 ```
 
-The values should be self-explanatory. The `base` field defines the "primary" unit for the currency - BTC for Bitcoin, ETH for Ethereum, DOT for Polkadot, etc. This is used for human-friendly formatting. `humanDecimals` is used for pretty-printing approximate (truncated) stringified values using `toHuman()`.
+For a `MonetaryAmount`, the internal representation will be stored with a 10 to the power of `decimals` shift of the `Currency`. Rounding, default behaviors for `toString()` and `toBig()` will represent the amounts at that precision.
+For example, when using an amount of `0.5 Bitcoin`, the internal representation is represented as `0.5 * 10^8` (50,000,000 Satoshi)
+and all operations (`.add(...)`, `.sub(...)`, etc.) will use the internal representation.
+
+`humanDecimals` is used for pretty-printing approximate (truncated) stringified values using `toHuman()`.
 
 At this point, the currency is usable:
 
 ```ts
-import { Bitcoin, BitcoinUnit } from 'src/currencies/bitcoin';
-const btcAmount = new MonetaryAmount<Bitcoin, BitcoinUnit>(Bitcoin, 0.5, Bitcoin.units.BTC);
+import { Bitcoin, BitcoinUnit } from "src/currencies/bitcoin";
+const btcAmount = new MonetaryAmount<Bitcoin, BitcoinUnit>(
+  Bitcoin,
+  0.5,
+  Bitcoin.units.BTC
+);
 ```
 
 However, this is a bit verbose. We can subclass `MonetaryAmount` for convenience:
 
 ```ts
 export class BitcoinAmount extends MonetaryAmount<Bitcoin, BitcoinUnit> {
-  static from = generateFromConversions(Bitcoin, BitcoinUnit);
+  // added convenience method
+  static zero = () => new BitcoinAmount(0);
 }
 ```
 
-Notice that we define a static member `from` - recall from the examples above that this can be used as syntactic sugar to bypass the constructor. `generateFromConversions` automatically populates the required object with the necessary functions, based on the currency and unit objects.
-
-And that's all that's necessary to define a currency. Of course, this can be extended as required - for instance, `src/currencies/ethereum.ts` extends the `Currency` interface and add support for ETC20 contracts with configurable addresses.
 ## Development
 
 ### Installation
@@ -157,7 +145,6 @@ And run tests:
 yarn test
 ```
 
-
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are greatly appreciated. Our basic [contributing guidelines](CONTRIBUTING.md) are found in this repository.
@@ -174,7 +161,7 @@ If you are searching for a place to start or would like to discuss features, rea
 
 ## License
 
-(C) Copyright 2021 [Interlay](https://www.interlay.io) Ltd
+(C) Copyright 2022 [Interlay](https://www.interlay.io) Ltd
 
 monetary is licensed under the terms of the MIT License. See [LICENSE](LICENSE).
 
