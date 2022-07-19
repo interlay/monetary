@@ -83,7 +83,7 @@ const totalEthers = ethers.add(bitcoinsAsEthers);
 
 Monetary-js comes with Bitcoin, Ethereum and Polkadot predefined, but it is meant to be extensible for any currency. `src/currencies/bitcoin.ts` can be used as an example for the minimal work needed to define a currency. Another example is `DummyCurrency` defined inline for unit tests in `test/monetary.test.ts`
 
-The only step is to define our currency, parametrising the type with decimals. 
+The first step is to define our currency, parametrising the type with decimals. 
 
 ```ts
 export const Bitcoin: Currency<typeof BitcoinUnit> = {
