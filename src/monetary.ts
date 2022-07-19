@@ -28,6 +28,14 @@ export class MonetaryAmount<C extends Currency> {
     return this._amount.round(0, rm);
   }
 
+  /**
+   * Creates a new MonetaryAmount instance with a given amount and currency.
+   * The amount is assumed to be in the base denomination of the currency.
+   *
+   * eg. amount 15 with currency Bitcoin is assumed to be 15 BTC (as opposed to Satoshi, Bitcoin's atomic denomination).
+   * @param currency The currency of the new monetary amount.
+   * @param amount The amount of the new monetary amount in its base denomination.
+   */
   constructor(readonly currency: C, amount: BigSource) {
     amount = new Big(amount).mul(new Big(10).pow(currency.decimals)); // convert to atomic denomination
     this._amount = amount;
