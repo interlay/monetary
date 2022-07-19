@@ -1,12 +1,6 @@
 import { BigSource } from "big.js";
 import { Currency, MonetaryAmount } from "../monetary";
 
-export const InterlayUnit = {
-  INTR: 10,
-  Planck: 0,
-} as const;
-export type InterlayUnit = typeof InterlayUnit;
-
 export const Interlay: Currency = {
   name: "Interlay",
   decimals: 10,
