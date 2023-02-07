@@ -1,6 +1,7 @@
 import Big, { BigSource, RoundingMode } from "big.js";
 import { expect } from "chai";
 import * as fc from "fast-check";
+import { Polkadot } from "../src/currencies";
 
 import { Currency, MonetaryAmount } from "../src/monetary";
 
@@ -68,6 +69,21 @@ describe("MonetaryAmount", () => {
           );
         })
       );
+    });
+
+    it("should show full amount or scientific notation as expected", () => {
+      // expected cutoff is 39
+      const above = Big(1e39);
+      const below = above.sub(1);
+
+      const amountAbove = new MonetaryAmount(Polkadot, 0).withAtomicAmount(above);
+      const amountBelow = new MonetaryAmount(Polkadot, 0).withAtomicAmount(below);
+
+      expect(amountAbove.toString(true)).to.eq("1e+39");
+
+      // 39 times the '9' character
+      const expectedBelow = "9".repeat(39);
+      expect(amountBelow.toString(true)).to.eq(expectedBelow)
     });
   });
 
