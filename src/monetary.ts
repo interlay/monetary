@@ -1,8 +1,12 @@
 import Big, { RoundingMode, BigSource } from "big.js";
 
-Big.DP = 100;
-Big.NE = -39;
-Big.PE = 39;
+export function configGlobalBig(): void {
+  Big.DP = 100;
+  Big.NE = -39;
+  Big.PE = 39;  
+}
+
+configGlobalBig();
 
 export interface Currency {
   readonly name: string;
