@@ -3,7 +3,7 @@ import Big, { RoundingMode, BigSource } from "big.js";
 export function configGlobalBig(): void {
   Big.DP = 100;
   Big.NE = -39;
-  Big.PE = 39;  
+  Big.PE = 39;
 }
 
 configGlobalBig();
@@ -120,7 +120,7 @@ export class MonetaryAmount<C extends Currency> {
   }
 
   isZero(): boolean {
-    return this._amount.eq(new Big(0));
+    return this.toBig().eq(new Big(0));
   }
 
   protected isSameCurrency(amount: this): boolean {
