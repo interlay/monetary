@@ -76,14 +76,18 @@ describe("MonetaryAmount", () => {
       const above = Big(1e39);
       const below = above.sub(1);
 
-      const amountAbove = new MonetaryAmount(Polkadot, 0).withAtomicAmount(above);
-      const amountBelow = new MonetaryAmount(Polkadot, 0).withAtomicAmount(below);
+      const amountAbove = new MonetaryAmount(Polkadot, 0).withAtomicAmount(
+        above
+      );
+      const amountBelow = new MonetaryAmount(Polkadot, 0).withAtomicAmount(
+        below
+      );
 
       expect(amountAbove.toString(true)).to.eq("1e+39");
 
       // 39 times the '9' character
       const expectedBelow = "9".repeat(39);
-      expect(amountBelow.toString(true)).to.eq(expectedBelow)
+      expect(amountBelow.toString(true)).to.eq(expectedBelow);
     });
   });
 
@@ -295,6 +299,17 @@ describe("MonetaryAmount", () => {
       it("should fail when dividing by zero", () => {
         expect(() => new DummyAmount(1).div(0)).to.throw("Division by zero");
       });
+    });
+  });
+
+  describe("isZero", () => {
+    it("should be equal to zero if amount is lower than lowest possible unit of currency", () => {
+      const smallestAmount = Big(1).div(10 ** DummyCurrency.decimals);
+      const smallerThanSmallestUnitAmount = smallestAmount.div(10);
+
+      expect(new DummyAmount(smallestAmount).isZero()).to.be.false;
+      expect(new DummyAmount(smallerThanSmallestUnitAmount).isZero()).to.be
+        .true;
     });
   });
 });
