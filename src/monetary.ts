@@ -144,6 +144,11 @@ export class MonetaryAmount<C extends Currency> {
   }
 
   // NOTE: needs override if constructor is overriden
+  /**
+   * Creates a new MonetaryAmount instance with the same currency, but the given base amount set.
+   * @param amount The base amount in the natural denomination for the currency of this instance.
+   * @returns A new MonetaryAmount instance with the given amount.
+   */
   withAmount(amount: BigSource): this {
     const Cls = this.constructor as new (
       currency: Currency,
@@ -153,10 +158,28 @@ export class MonetaryAmount<C extends Currency> {
   }
 
   // NOTE: may need override if withAmount signature is overriden
+  /**
+   * Creates a new MonetaryAmount instance with the same currency, but with the given atomic amount.
+   * @param amount The atomic amount for the given currency (ie. in its smallest denomination).
+   * @returns A new MonetaryAmount instance with the given atomic amount.
+   */
   withAtomicAmount(amount: BigSource): this {
     const baseAmount = new Big(amount).div(
       new Big(10).pow(this.currency.decimals)
     );
     return this.withAmount(baseAmount);
+  }
+
+  /**
+   * Creates a new MonetaryAmount instance by passing in an atomic amount and the currency type.
+   * @param atomicAmount The atomic amount for the given Currency (ie. in its smallest denomination).
+   * @param currency The currency.
+   * @returns A MonetaryAmount instance for the given currency and amount.
+   */
+  public static fromAtomicAmount<C extends Currency>(atomicAmount: BigSource, currency: C): MonetaryAmount<C> {
+    const baseAmount = Big(atomicAmount).div(
+      Big(10).pow(currency.decimals)
+    );
+    return new this(currency, baseAmount);
   }
 }

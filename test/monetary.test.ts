@@ -1,7 +1,7 @@
 import Big, { BigSource, RoundingMode } from "big.js";
 import { expect } from "chai";
 import * as fc from "fast-check";
-import { Polkadot } from "../src/currencies";
+import { Polkadot, PolkadotAmount } from "../src/currencies";
 
 import { Currency, MonetaryAmount } from "../src/monetary";
 
@@ -310,6 +310,21 @@ describe("MonetaryAmount", () => {
       expect(new DummyAmount(smallestAmount).isZero()).to.be.false;
       expect(new DummyAmount(smallerThanSmallestUnitAmount).isZero()).to.be
         .true;
+    });
+  });
+
+  describe("fromAtomicAmount", () => {
+    it("should construct as expected", () => {
+      const expectedNaturalAmount: number = 42;
+      const expectedAtomicAmount: number = expectedNaturalAmount * (10 ** Polkadot.decimals);
+
+      const dotAmount = MonetaryAmount.fromAtomicAmount(expectedAtomicAmount, Polkadot);
+
+      expect(dotAmount.toBig().toNumber()).to.equal(expectedNaturalAmount);
+      expect(dotAmount.toBig(0).toNumber()).to.equal(expectedAtomicAmount);
+
+      const otherDotAmount = new PolkadotAmount(expectedNaturalAmount);
+      expect(dotAmount.toHuman()).to.equal(otherDotAmount.toHuman());
     });
   });
 });
