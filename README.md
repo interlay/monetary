@@ -157,11 +157,11 @@ Contributions are what make the open source community such an amazing place to b
 
 If you are searching for a place to start or would like to discuss features, reach out to us on the #development channel:
 
-- [Discord](https://discord.gg/KgCYK3MKSf)
+- [Discord](https://discord.gg/interlay)
 
 ## License
 
-(C) Copyright 2022 [Interlay](https://www.interlay.io) Ltd
+(C) Copyright 2023 [Interlay](https://www.interlay.io) Ltd
 
 monetary is licensed under the terms of the MIT License. See [LICENSE](LICENSE).
 
